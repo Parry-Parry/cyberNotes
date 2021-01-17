@@ -384,7 +384,7 @@ _A block cipher:_
 
 _It started as project Lucifer at IBM_
 - Several small transformations are repeated one after the other
-- Each has a different sub-key, generated from a master key
+- Each has a different sub-key, generated from a master key \- using small transformations
 - It had a key length of 128 bits
 
 _The NSA (US National Security Agency) modified Lucifer slightly and it was adopted in 1977_
@@ -413,7 +413,7 @@ _This is vulnerable to a meet\-in\-the\-middle attack_
 
 **meet\-in\-the\-middle attack** : a generic spac\e–time tradeoff cryptographic attack against encryption schemes that rely on performing multiple encryption operations in sequence
 
-- Three key triple DES is not vulnerable and has a key length of 168 bits
+- Three key triple DES is not vulnerable and has a key length of 3 * 56 = 168 bits
 
 C = E<sub>K3</sub>\(D<sub>K2</sub>\(E<sub>K1</sub>\(P\)\)\) where E is encryption and D is decryption
 
@@ -444,7 +444,7 @@ _The design of AES was performed in public, unlike DES_
 
 - Applicants were reduced to five for the final evaluation
 
-- This is a block algorithm with block sizes of 128, 192 or 256 bits and key lengths of 128, 192 or 256 bits
+- This is a block algorithm with block sizes of 128, 192 or 256 bits and key lengths of 128, 192 or 256 bits \- smaller is faster
 - It repeats a few simple steps several times in rounds and each round has its own sub-key generated from a master key, just like DES
 - The DES decryption algorithm used the same steps as for encryption, just in the reverse order
 - It uses simple mathematical operations
@@ -472,6 +472,7 @@ _A simple way of doing this is to encrypt all the blocks individually_
 _In cipher block chaining, each block of plaintext is xored \(exclusive or\) with the previous block of cipher text before encrypting_
 - Regular patterns in the plain text do not appear in the cipher text
 - C<sub>i</sub> = E<sub>K</sub>\(C<sub>i-1</sub>⊕P<sub>i</sub>\) where ⊕ is the exclusive or operator
+
 _xor has the useful properties:_
 - a ⊕ a = 0
 - a ⊕ 0 = a
