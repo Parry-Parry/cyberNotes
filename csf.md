@@ -500,3 +500,373 @@ _It is possible to examine the physical file storage device and several differen
 - Erased data can be recovered, say from the magnetic material
 
 - The technique to beat this is to overwrite with different random data 7 times
+
+# Week 3
+### Slides
+
+#### Protocol: Public Key System
+
+_Two different keys are used_
+
+A **public key** is used for encryption:
+- Anyone can access this key
+- There is no key distribution problem
+
+A **secret key** is used for decryption:
+- Knowledge of the public key will not lead to knowledge of the secret key
+
+There is usually a single algorithm:
+- Used with the public key encrypts
+- Used with the secret key decrypts
+
+#### Authentication Problems
+
+_There is no key distribution problem because the encryption key is public._
+
+There is a **key authentication** problem:
+- How does Alice know that the public key is really Bob’s?
+- The transmission medium is insecure and so it could be substituted
+
+Also the **message authentication** problem:
+- How does Bob know the message is from Alice?
+- Anyone can get Bob’s public key to encrypt a message
+
+#### Man in the Middle Attack
+
+- Bob sends his public key to Alice, but it is intercepted by Eve
+- Eve sends her public key to Alice, pretending it is Bob’s
+- Alice encrypts the plaintext with Eve’s public key \(thinking it is Bob’s\)
+- Alice sends the ciphertext to Bob
+- Eve intercepts the ciphertext and decrypts it with her secret key
+- She reads the plaintext and discovers what Alice has to say
+- She encrypts it with Bob’s public key and forwards it to Bob
+- Both Alice and Bob are unaware of this attack
+
+#### Problem: Authentication
+
+Secrecy and authentication are nearly equivalent in one key systems:
+- Alice must know the secret key to encrypt a message
+- She is thus authorised to use it
+
+_If several people share the secret key then it is not possible to determine which of them encrypted the message._
+
+#### Protocol: Public Key Digital Signatures
+
+- Alice encrypts her plaintext document with her secret key, rather than Bob’s public key
+- She sends the document, together with the encrypted version, to Bob
+- Bob decrypts the encrypted version with Alice’s public key and verifies that they are both the same
+
+_The encryption and decryption operations must cancel each other, no matter which order they are used._
+
+#### Properties of Digital Signatures
+
+- Bob can verify the signature without Alice’s help
+- The signature cannot be forged because only Alice knows her secret key
+- The signed document in unalterable, except by Alice
+- The signature cannot be transferred to another document
+
+#### Secrecy and Authenticity
+
+Signing a document does not make it secure:
+- Notice that Eve could also undo the signature and read the document
+- She can get Alice’s public key
+
+- Encrypting a document does not guarantee authenticity
+- Signing and encrypting a document can provide both secrecy and authentication
+
+#### Public Key Certificates
+
+In many cases the plain text document to be signed contains a public key:
+- The signed key plus other information is called a public key certificate
+- It is signed by Trent, a trusted third party
+- Trent’s public key must also be distributed in a secure way
+
+Bob can distribute his key in a public key certificate \(Provided Alice already has Trent’s public key\).
+
+_This defeats a man in the middle attack._
+
+#### Problem: Authentication without Revelation
+
+- In the preceding example the signed document was the same length as the unsigned document
+- This can be inconvenient, especially when many signed documents must be stored
+
+- If just a signature is added, then the contents of the signed document also becomes public knowledge
+- It can be seen using the public key to undo the signature
+
+#### Protocol: Message Digest
+
+**Message Digest** : a condensed version of an original document. It is typically around 256 bits long.
+
+It is a unique short description of the original document:
+- Like a fingerprint
+- The chance of two different documents producing the same message digest is very low
+
+_The algorithm to produce a message digest is sometimes called a hash function._
+
+#### Message Digests and Signatures
+
+- Giving someone a signed copy of a message digest is equivalent to giving them a signed copy of the document
+- If the signature needs to be checked then the message digest can be calculated from the original document a second time
+- The original message digest can be recovered by removing the signature
+- If both the message digests are the same then the signature is valid
+
+#### Public Key Encryption: RSA
+
+- The RSA algorithm is based on number theory
+
+_Its security is based on the difficulty of factoring an integer that is the product of 2 large prime numbers:_
+- Some problems, called NP\-Complete problems, are thought to be intrinsically difficult and no quick solution will be found
+- Integer factorisation is not one of these
+- A fast solution may be found, in which case the RSA algorithm will no longer be any good
+- A fast algorithm to prove whether an integer is a prime number or not was found relatively recently
+
+RSA was invented by an English mathematician Clifford Cocks on his first day of working for GCHQ in 1973 but was kept secret until 1997.
+
+#### The RSA Algorithm
+
+- Two random prime numbers p and q are created and kept secret
+- Their product, n = p \* q, is calculated and is public
+- Its inverse e is calculated and is public: d \* e = 1 modulo \(p\-1\)\(q\-1\)
+- This inverse uses modular arithmetic, so that 1/d is still an integer: \(d \* e\) % n = 1 for some n
+- If \(p\-1\)\(q\-1\) and dhave a common factor then e does not exist
+
+- The plain text is turned into a series of integers all < n
+- The public key is \(e, n\) and the cipher text C = P<sup>e</sup> % n
+- The secret key is \(d, n\) and the plain text P’ = C<sup>d</sup> % n
+- Some number theory makes sure that P’ = P
+- n, d and e are typically 4000 bits long, so it is very slow
+
+The encryption and decryption algorithms are the same, exponentiation.
+
+We can break this algorithm if we can factor large integers:
+- We know n and e
+- Finding pand q lets us solve the equation for d, the decryption parameter
+
+It is possible to factor quite large integers:
+- n, d and e must be quite large
+- Hence the algorithm is very slow
+
+#### Guidance on RSA Key Sizes
+
+- 896 bits until 2004
+- 1024 bits until 2009
+- 1152 bits until 2010
+- 1408 bits until 2014
+- 1984 bits until 2016
+- 2048 bits until 2030
+- 3072 bits **beyond** 2030
+
+#### Public Key: Diffie\-Hellman Key Exchange
+
+- The Diffie\-Hellman key exchange uses an exponential algorithm to generate a single key that is shared by two people
+- Both parties contribute to the key by sharing information over an insecure communication channel
+
+Each party keeps some information secret.  This secret information is vital to be able to construct the key:
+- Each person generates a public and secret number
+- They exchange the public numbers
+
+- The key cannot be generated from the public information
+- This algorithm forms the basis for session key construction in many internet applications 
+
+#### The D\-H algorithm
+
+Alice and Bob both use two public numbers:
+- p, a large prime
+- g, a primitive root of p
+- Most protocols have a standard set of values to use
+
+Alice and Bob create random numbers, X<sub>A</sub>, X<sub>B</sub> less than p which are their secret keys
+
+They both calculate Y = g<sup>X</sup> % p and exchange them, these are their public keys
+
+Alice calculates K = Y<sub>B</sub><sup>X<sub>A</sub></sup> % p = \(g<sup>X<sub>B</sub></sup>\)<sup>X<sub>A</sub></sup> % p = g<sup>X<sub>A</sub>X<sub>B</sub></sup> % p
+
+_Bob does the same thing and both keys are identical._
+
+#### The Security of D\-H
+
+- g being the primitive root of p means that  Y = g<sup>X</sup> % p has a solution for every value of Y < p
+- This equation is called the discrete logarithm problem: Find X given Y and g, p
+
+Number theory shows that this is equivalent to factoring:
+- Finding a quick way of factoring numbers will also break D\-H
+- Finding a quick way to solve the discrete logarithm problem will also break RSA
+
+The lengths of p, X and Y are similar to the RSA length:
+- Very long
+- Leading to a slow algorithm
+
+#### Elgamal Public Key Systems
+
+- This system is based on Diffie\-Hellman key exchange
+
+It is just as secure as RSA:
+- It is not quite as convenient as RSA
+- But it can be used without as license
+
+- It can be used to sign documents
+- The maths are slightly more complex
+- Elgammal was one of Martin Hellman’s PhD students at Stanford
+
+#### Elliptic Curve Cryptography
+
+- Ellipse: curve with equation x<sup>2</sup> / a<sup>2</sup> +  y<sup>2</sup> / b<sup>2</sup> = 1
+
+_Different values of a nd b give different ellipses._
+
+- Elliptic curves are not ellipses but curves that arise in attempts to find a function for the distance round an ellipse
+- General elliptic curve with parameters a and b: y<sup>2</sup> = x<sup>3</sup> +ax + b
+
+#### Elliptic Curve Crypto
+
+- We have a set of all points on the curve
+- We define addition of two points by drawing a line connecting the points and finding the third point where this line cuts the elliptic curve
+- This produces a cubic equation in x and so in general any line will cut the curve in three points
+
+There are special cases when two of the points are the same:
+- The point at infinity is like 0 with normal addition
+- A line parallel to the y\-axis that just touches the curve will cut the curve again at infinity
+
+- There are also cases where the line only cuts the curve once
+
+This lets us define an operation that we can call multiplication:
+
+- If A and B are two points on the curve then they define a unique line that goes through them both
+- If the 3<sup>rd</sup> point where the line cuts the curve is called C, then we can write: C = A \* B, defining multiplication
+
+- Real number arithmetic is not used because cryptography works better with integers
+- Integers mod n or similar approaches are used
+
+#### Advantages of Elliptic Curve Cryptography
+
+- Security using elliptic curves is based on the hardness of a discrete logarithm problem
+
+However the key sizes are much smaller:
+- 256 bit ECC provides the same security as 3072 bit RSA
+- NSA \(National Security Agency\) uses 384 bit keys
+
+- NIST \(National Institute for Standards and Technology\) recommended a particular curve that was later found suspect and deprecated by RSA 
+- The different elliptic curve called Curve25519 is now popular: y<sup>2</sup> = x<sup>3</sup> + 4866662x<sup>2</sup> + x
+
+#### Public Keys and Elliptic Curves
+
+- Public keys systems based on ECC have been defined
+- They can also be used in random number generators
+- They can also be used in factoring algorithms
+
+#### More on message digests
+
+**Requirements of Message Digests:**
+- Given the message, it is easy to compute the message digest
+- Given the message digest, it is hard to compute the message
+- Given a message M, it is hard to find another message M' with the same message digest.  Preimage resistance of collisions
+- It should be hard to find two random messages M and M' with the same message digest
+- This means that message digests must be long enough
+
+#### A Survey of Hash Functions
+
+- Functions to generate message digests are called hash functions
+
+- MD5 was invented by Ron Rivest, 128 bit keys and vunerable to birthday attack
+
+- SHA\-1 was produced by NIST, 160 bit key also vunerable to birthday attack
+
+- SHA\-2 also produced by NIST, with 4 versions:
+- SHA\-256 \(or 224\); SHA\-512 \(or 384\) bit
+- Secure so far.  Most widely used
+
+- SHA\-3 public competition with adoption in 2012
+
+#### SHA-3 Competition
+
+- Following the success of the AES competition, NIST announced a competition for a message digest, to be called SHA\-3, in November 2007
+- 64 entrants were submitted by October 2008
+
+- 51 were accepted for the first round and public scrutiny began
+- About 20 were broken
+
+- 14 made it into the second round
+
+5 finalists were announced in December 2010:
+- BLAKE
+- Grøstl based on AES
+- JH
+- Keccak
+- Skein
+
+- All finalist’s functions were tweaked in response to public analysis
+- Winner, announced in October 2012, was Keccak, it was significantly faster than the others
+- NIST wanted to change Keccak slightly to trade off security for speed, but backed off because of the climate of mistrust
+
+#### Random Numbers
+
+- A real random number sequence is a sequence of numbers which cannot be repeated if the generator is run again
+- A pseudo\-random number sequence looks like a real random number sequence but is repeatable
+- A cryptographically secure pseudo\-random number sequence cannot be predicted from knowing some of the numbers in the sequence
+
+#### Generating Real Random Sequences
+
+- Computer Clock: Taking the middle chunk of bits from a very accurate clock
+
+Keyboard Latency:
+- Measure the time between successive key strokes, which is quite random
+- This is OK for generating short random sequences
+- Needs a user to be present to enter the keystrokes
+
+- Using random noise: Measure the time interval between random events such as atmospheric noise being above a certain threshold
+
+#### Pseudo\-Random Sequences
+
+- Pseudo random sequences are sequences that are completely predicable from the starting value
+- Their distribution looks random: The frequency distribution of values, pairs of values etc is the same as a random sequence
+- They are useful for simulation
+- They can sometimes be useful for encryption, but care must be taken
+
+#### Problems with PRNG: Netscape
+
+- In 1996 two Computing students discovered a flaw in Netscape’s PRNG that enabled them to easily brake SSL
+
+_SSL_ : Secure Sockets Layer, used for internet security
+
+At that time, the USA government viewed crypto products as munitions and prevented their exports to non Americans:
+- The USA SSL key length was 128 bits, which would take a long time to break with a brute force attack
+- Export versions had a key length of 40 bits, which would require 2<sup>40</sup> ≈ 10<sup>12</sup> attempts
+- Just about anyone could break the export version with a brute force attack
+
+- A random number generator was called 4 times to generate the key
+- The weakness was in the way the initial seed was chosen: It was based on the process number, the parent process number and the time in milliseconds
+- Communications were initiated by one party sending a random number and the other replying with the encrypted version
+- Just 10<sup>6</sup> attempts were needed to break both the USA and export versions of Netscape SSL
+- It took 25 seconds on a standard PC of the time
+
+#### Dual\_EC\_DRBG
+
+- This stands for Dual Elliptic Curve Deterministic Random number Generator
+
+In 2007 NIST issued a new cryptographically secure random number generator standard with 4 algorithms:
+- The recommended, and default, algorithm was Dual\_EC\_DRBG
+- It was recommended by NSA
+
+_It was an order of magnitude slower than the others._
+
+#### Crypto 2007 Conference: Aug 2007
+
+- Dan Shumow and Niels Ferguson from Microsoft demonstrated that the algorithm had some secret parameters that were used to derive the public parameters
+- These secret parameters could be used to recover all the internal workings of the PRNG from 32 bytes of output
+- Prominent figures in the crypto community at the times, such as Bruce Schneier, recommended that Dual\_EC\_DRBG should not be used
+- This lead to doubts about all the curves recommended by NIST and the adoption of the different curve25519
+
+#### OpenSSL
+
+- This is an open source library of crypto implementations
+- The user could choose between several different pseudo\-random number generators
+- A coding bug discovered in December 2013 meant that it was impossible to actually choose Dual\_EC\_DRBGas the random number generator
+- There were no bug reports, and so no one had actually used it
+
+#### NIST and RSA
+
+- The RSA organisation used Dual\_EC\_DRBG in its product Bsafe as the default, on recommendation from the NSA, starting in 2004
+- In September 2013 NIST strongly recommended that Dual\_EC\_DRBG no longer be used
+- RSA then also recommended that it not be used
+
+
