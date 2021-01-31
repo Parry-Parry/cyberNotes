@@ -869,4 +869,276 @@ _It was an order of magnitude slower than the others._
 - In September 2013 NIST strongly recommended that Dual\_EC\_DRBG no longer be used
 - RSA then also recommended that it not be used
 
+## Week 3
+### Slides
+#### Man in the Middle Attacks
+
+* **All public key systems** are vulnerable to a man in the middle attack
+* If Alice and Bob are communicating, then Eve has to make sure that all communications go through her
+* If Bob is sending his public key to Alice then Eve grabs it and replaces it with her own public key
+* When Alice sends an encrypted message, encrypted with what she thinks is Bob’s public key, Eve grabs it and decrypts it, since it was really encrypted with her public key
+* She can alter it, encrypt it with Bob’s public key, and send it to Bob
+
+#### Public Key Certificate
+
+* A public key certificate is a document that contains a public key, the owners ID and other application specific information
+	* It has been signed by Trent, a trusted third party
+* **Attack**: Eve creates a fake certificate that pretends to contain Bob’s public key, but actually contains her public
+	* Eve cannot sign it because she does not have Trent’s secret key
+	* Trent must keep his secret key secret
+	* There must be a mechanism for Trent to revoke their public key and issue new certificates if their secret key is compromised
+* **Attack**: Eve asks Trent to sign her public key certificate, pretending to be Bob
+	* Trent must verify the owner’s ID before signing the certificate.
+	* The certificate must contain the owner’s ID as well as the public key
+* **Attack**: Eve sets up her own certifying authority
+	* In practice, there are many certifying authorities, not just one Trent
+	* There must be a higher organisation to certify certifying authorities
+* Alice must already have Trent’s public key so that she can unlock the certificate.
+	* This is called a master key
+	* Getting this should be an easier problem than getting Bob’s public key
+
+#### Certificate Chains
+
+* It is possible to have several layers of public key certificates
+* Trent’s public key can be distributed as part of a public key certificate signed by a national certifying authority
+* Alice just has to have the correct public key for the national certifying authority
+	* An even easier problem to solve
+	* She uses it to get Trent’s public key from Trent’s certificate
+	* She uses Trent’s public key to get Bob’s public key from Bob’s certificate
+* The certifying authority’s key can be embedded in hardware.
+	* Tamper resistant or tamper evident
+
+#### Chip and PIN
+
+##### Context
+
+* Chip and PIN cards have a chip embedded in the card to allow programs to run on the card
+	* They are called ICC or Integrated Circuit Cards
+	* They are also called smart cards
+	* Old style cards just contained a magnetic strip
+* They are part of the EMV standard
+	* Europay, Mastercard, Visa
+	* Europay became part of Mastercard in 2002
+* They use a public key infrastructure
+
+* Smart cards have been introduced to combat fraud
+* Implementing chip and PIN cost around £1 billion
+* The chip addresses counterfeit fraud where cards are cloned
+	* It verifies the card
+* The PIN combats signature fraud by verifying the cardholder
+* Other advantages include not having to store signed copies of card vouchers
+
+#### Liability Shift
+
+* Starting from 2005, the liability for fraudulent transactions at the point of sale shifted from the bank to the retailer if the retailer is not using chip and PIN
+* On the other hand, if the bank does not support chip and PIN then they will be liable for losses
+* This changed on 1<sup>st</sup> November 2009, when the banks had to prove that the customer was at fault when money was taken from an account
+* This was a result in failures of the Chip and PIN system
+
+#### Failures
+
+* In 2006 Shell petrol stations were attacked
+	* Their implementation of the protocol allowed customer data to beleaked and around £1 million was stolen from their customers
+* In October 2008, PIN terminals were targeted during their manufacture in China, again leaking customer data
+* A man in the middle attack was successfully demonstrated in 2009
+
+#### Operations Provided
+
+* The card can be authenticated by a terminal in two ways:
+	* **Static Data Authentication** – magnetic strip
+	* **Dynamic Data Authentication**  – chip on card
+* Transactions and messages can be authenticated using a signed message digest
+	* This is called an application cryptogramor a message authentication code \(MAC\)
+* Transactions and messages can be secured by encryption
+	* This is single key encryption after the user has been verified
+* PIN encryption at point of entry \(optional\)
+	* Signing a transaction is the alternative
+
+#### Algorithms Used
+
+* Algorithms
+	* 3\-DES, RSA, SHA\-1 \(Secure Hash Algorithm 1\)
+	* Possibly new algorithms in the future \(e.g. ECDSA\) Elliptic Curve Digital Signature Algorithm
+* Mechanisms
+	* RSA digital signatures and public key certificates
+	* Card unique 3\-DES keys, derived from Master Keys
+	* Unique session keys for encryption and MAC
+
+#### EMV Public Key Certificates
+
+**Components**
+
+* Certificate core
+	* General information about the user and the application
+* Public Key
+	* User’s public key \(including remainder\)
+	* EMV formatting
+* Message digest
+	* Message Digest of data
+* Signature by a Trusted Third Party
+
+#### Public Key Certificate Validation
+
+* The public key of the Trusted Third Party \(who signed the certificate\) is used to decrypt the certificate, thus revealing the data
+* The EMV formatof the revealed data \(header, trailer, certificate format\) is checked
+* The message digest of the revealed data is calculated and check that it is the same as the message digest in the certificate
+* The public key exponent and modulus, \(e, n\) is extracted from the revealed data
+* The public key remainder found on key certificates is an optimisation parameter designed to speed up the calculations
+	* RSA exponential calculations are slow
+
+#### Parties to the Transaction
+
+* Payment System **Certifying Authority**: the trusted third party in charge of the whole process
+* The Issuer: a bank
+* Card associated with a customer
+	* **Primary account number**: the 16 digit number on the card
+* Acquirer: the merchant selling something to the customer
+* The Card terminal
+
+#### Static Data Authentication
+
+* A Certifying Authority public key certificate is stored in the terminal in unsigned form
+	* Protected against change, tamper resistent
+* A bank public key certificate, signed by the Certifying Authority is stored on the card
+* Static Data on the magnetic strip includes:
+	* Primary account number
+	* Application Expiry Date
+	* Bank parameters
+* Static Data Authentication is used to make sure that that certain data elements on the card have not changed since the card was issued
+
+**See CHIP AND PIN WEEK 3 FOR STATIC DATA AUTH DIAGRAMS**
+
+#### Dynamic Data Authentication
+
+* Dynamic data authentication provides authenticity and integrity of the Card
+* Allows detection of unauthorised alteration of Card data after the card has been personalised
+* Prevents replay attacks and Card counterfeiting
+* Dynamic data authentication involves a Terminal **unpredictable number** \(UN\) or \(nonce\) and calculations on the Card
+	* The UN is signed by the card’s secret key
+* 3 public / secret key pairs are used in this certificate chain
+
+**See CHIP AND PIN WEEK 3 FOR DYNAMIC DATA AUTH DIAGRAMS**
+
+#### What Happens in Detail
+
+* Power up the chip and negotiate the communications protocol
+	* There will be different versions of the protocol
+* Process the list of EMV payment applications supported by the chip, for example, credit and debit
+	* Give a choice to the cardholder or ask for their confirmation
+* Select the chosen application and read the relevant information from the chip
+* Validate the chip data using the public key infrastructure
+* Check the PIN
+	* If the PIN operations time out then check the signature
+* Decide whether to approve off\-line, go on\-line or decline, based on floor limits, type of transaction, success of PIN, expiry dates, etc
+* The chip is given the opportunity to override this decision
+* If the transaction goes on\-line then additional chip data is sent to the bank
+	* The bank uses this data to verify the card.  The data is signed by the cards secret key
+	* The bank sends additional data, signed with its secret key.  The card uses this to verify the bank
+	* Part of the response from the bank can be a script which is processed by the chip.  This can disable the chip if stolen, unblock the PIN, etc
+* The chip is asked if it wants to override the decision to approve or decline the transaction
+* The transaction takes place
+* The chip is powered down
+
+#### Chip and PIN is Broken
+
+* Murdoch, Drimer, Anderson and Bond demonstrated a flaw in the Chip and PIN protocol in 2009
+* They were able to use a card without knowing the PIN in a man in the middle attack
+	* They used several cards, entering a PIN of 0000 each time, in their department canteen at the University of Cambridge with the knowledge and permission of the management
+* They used the offline PIN verification protocol where the PIN was verified by the card and not the bank
+* They built a man\-in\-the\-middle machine with a laptop and special hardware that cost $200
+
+#### The Authentication Protocol
+
+* There are two actors: Card and Terminal
+* The following dialog takes place after some preliminaries: 
+* Card → Terminal: Get the PIN from the user and send it to me
+* Terminal → Card \-  either:
+	* Here is the PIN
+	* Or user verified without PIN \(signature, etc\)
+	* Or transaction rejected
+* Card → Terminal \(if PIN provided\) \- either: 
+	- PIN OK
+	- Or PIN INCORRECT, try for _x_ more times
+
+#### The Man in the Middle
+
+* The man in the middle sits between the card and the terminal, relaying message without changing them until the card asks the terminal to get the PIN
+* MIM then receives the PIN but does not pass it on to the card.  Instead it sends the following messages:
+	* MIM → Card: user verified without PIN
+	* MIM → Terminal: PIN OK
+* The terminal then proceeds with the transaction, which is logged as ‘Verified by PIN’
+* The card also concludes that the user has been authenticated
+
+#### Flaws the Made the Attack Possible
+
+* The user can be verified in two different ways by two different devices:
+	* Card verifies PIN
+	* Terminal verifies signature
+* The Terminal Verification Results \(TVR\) data format catered for many different failure modes but only 1 success mode
+	* It did not report on which method had been successful
+* The protocol allowed many different verification protocols
+	* The terminal relied on the success code from the card without knowing any details
+* The conversation between the Card and terminal is not authenticated, allowing a man\-in\-the\-middle attack
+* These are fundamental flaws which are difficult to fix
+
+#### Network Security Using Public Key Certificates
+
+#### TLS
+
+* TLS stands for Transport Level Security
+	* The current protocol for internet communication
+* It replaced SSL, Secure Sockets Layer
+	* A number of flaws of SSL were discovered over time
+
+#### Handshake Protocol
+
+* Client\(C\) and Server\(S\)
+	* C → S: Give me a secure connection
+* S → C: Use these algorithms
+	* Here is my public key certificate
+* C → S: Here is an Unpredictable Number \(UN\) encrypted with your public key
+
+* The certificate contains the server's name and public key
+	* It is encrypted with the secret key of a Certifying Authority \(CA\)
+	* The client already has the public key of this CA
+	* As a master certificate
+* Both the client and the server use UN to generate session keys for bulk encryption of data
+	* Using AES or 3DES
+* If the server is genuine then it knows the server secret key and so can decrypt UN
+	* If it is not genuine then it cannot get the UN
+	* It cannot encrypt / decrypt traffic with the client
+
+#### Alternative Handshakes
+
+* If the server does not have a certificate signed by an authority that the client has a master certificate for then an alternative has to be used
+* The most common is to use Diffie\-Hellman.  This is then vulnerable to a man in the middle attack
+* If the client and server connect regularly then they may use the same D\-H generated key
+* It is more secure if they use an Ephemeral D\-H key: a new key is generated for each session
+* If a connection between a client and a server will be used regularly then the connection parameters can be set up in advance
+	* Use pre-shared keys \(PSK\) or a secure remote password \(SRP\) \(such as Kerberos\)
+
+#### Man in the Middle \(MiM\) Attacks
+
+* A MiM attack can be prevented by using public key certificates, provided the certifying authority is secure
+	* If the CA is compromised then an attacker can forge their own certificates
+* There are a number of CA's, many of which are weak
+* The weakness of a MiM attack is that it must take place at a given time and between just 2 parties, a given client and server
+	* But it can be automated
+* This provides scope for preventing a MiM attack:
+	* Certificate pinning
+	* Certificate perspectives
+
+#### Certificate Pinning
+
+* Obtain a trusted version of the server certificate and then compare it with the one provided for each session
+* In many cases the client will treat the certificate obtained during the first visit to a site
+* If a different one is subsequently provided, then a MiM is probably taking place
+
+#### Certificate Perspectives
+
+* Use a third party, a notary, to obtain a server certificate from a different IP address
+* The MiM attack will probably not be taking place simultaneously on two different connections to the server
+* It is likely that the two certificates will be different if a MiM attack is taking place
+* Several different certificates from different notaries can be used for added security
+
 
