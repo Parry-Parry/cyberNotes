@@ -1141,4 +1141,449 @@ _It was an order of magnitude slower than the others._
 * It is likely that the two certificates will be different if a MiM attack is taking place
 * Several different certificates from different notaries can be used for added security
 
+## Week 4
+### Slides
 
+#### Secret Writing
+
+* Steganography is a form of hiding in plain sight
+	* The word steganography is made up of two Greek words meaning secret writing
+* A secret payloadis hidden inside an innocuous looking cover object, producing a stego object
+* The payload itself can be encrypted for additional security
+* In the past steganography involved modifying physical objects \(or people!\) in an undetectable way
+	* Now it involves modifying electronic objects
+
+#### Text Example
+
+* The payload, a short piece of text, can be converted into a bit string
+* The cover object, a longer text document, can be modified by adding a space to the end of the next line if the next bit is a 1
+* There must be a way of indicating the end of the payload, perhaps by terminating it with a NULL character \(8 zeros\)
+* The stego object will look the same as the original cover object
+	* The added space at the end of some lines will not be visible when reading the document
+
+#### Detecting Steganography
+
+* Text documents with extra spaces at the ends of some lines would look suspicious
+	* Provided steganography was suspected
+	* The analysis would have to be digital
+	* There might be another reason for the spaces, such as a birthday attack
+* If the original cover document were publicly available, such as the file dracula.txt, then the stego version of dracula.txt would be longer
+	* Steganography would be easy to detect
+
+#### Attacking Steganography
+
+* The payload could be removed if the stego object was processed to remove all blank spaces at the end of each line
+* This could be done as a preventative measure on allemails if steganography was suspected
+* This would prevent communications via steganography but would not recover the payload
+* This approach may not detect if steganography has been used, depending on how it was implemented
+* The aim of this attack is to prevent communications
+* The extra spaces could be put in the middle of lines
+* A word may or may not be misspelt in each sentence
+
+#### Steganography with Images
+
+* Text files have limited capacity and are only good for hiding small payloads
+* Image files are much larger and are commonly exchanged
+* There is much more spare capacity to hide secret information
+	* In a picture of my dog playing in the snow for example
+* There are many different image file formats, which can cause problems for steganographers
+
+#### Image Pixels
+
+* Image files contain header information and then the pixels
+	* The header information is usually quite precise, with little spare capacity
+* The bulk of the file is made up of pixels
+	* Each pixel will typically contain three colour components: red, green and blue
+	* Each colour component is typically 8 bits long, with 256 different possible values
+* The following slides show the bit planes for the green colour component of an image
+	* Each pixel is either  1 or 0
+
+#### Least Significant Bit \(LSB\)
+
+* The least significant bit of each colour component is often quite random
+* Replacing it with a different value will often not be noticed
+* Replacing all the least significant bits with bits from the payload will usually result in an image that looks the same as the cover image
+	* This gives a payload capacity of 1/8<sup>th</sup>\(12.5%\)
+* Replacing bit 1 with bits from the payload can often work as well, giving a 25% carrying capacity
+* The possible capacity is quite large
+	* Hide an image in another image
+
+#### Problems with LSB
+
+* The example cover image is quite good because the colours changequite rapidly over all of the image
+* Most pictures will have areas where the colour doesn’t change very much
+	* Sky, furniture, machines
+	* The pixel values do not change very much
+* Replacing the LSB with random rapidly changing values is then quite noticeable
+
+#### Bit Plane Complexity Segment \(BPCS\)
+
+* A bit plane is a black and white image created by taking one bit, say green bit 3, from every pixel in the image
+* The previous example showed all 8 bit planes from the green colour segment of all the pixels in the image
+	* There will be another 8 red and 8 blue bit planes, for a total of 24
+* In this algorithm, each bit plane is divided into small segments8 pixels long and 8 pixels high
+	* Each segment contains 64 bits
+* A 1024 x 1024 image will have 128 groups of 8 pixels in each direction, with 128 x 128 = 16,384 segments per bit plane
+* 4 bit planes gives a total of 24 \* 16,384 =  393,216 segments
+
+#### Complex Segments
+
+* In some segments the bits from neighbouring pixels will be distributed fairly randomly. They are called complex segments
+	* Most segments in the Bit 0 example
+	* They can be replaced with payload bits without anyone noticing
+* In other segments the bits from neighbouring pixels don’t change very much
+	* Many segments in the Bit 5 example
+	* They should not be replaced with payload bits
+* The BPCS algorithm only replaces complex segments
+
+#### What is Complex?
+
+* Complexity essentially measures how often neighbouring bits in asegment change value
+* For each row in a segment \(there are 8 rows\)
+	* Count the number of times the pixels change value
+	* Maximum value is 7, eg 10101010
+* Do the same for each of the 8 columns
+* The maximum number of changes is 2 x 8 x 7 = 112
+* The complexity of a segment C = number of actual changes / 112
+* Define a threshold value T, which is a parameter of the algorithm
+* If C \> T then the segment is complex
+
+#### Recovering the Payload
+
+* The embedding algorithm looks through all the segments in order
+	* If the segment is complex enough then it is replaced by payload bits
+	* Non\-complex segments are not changed
+* The extraction algorithm also looks through all the segments in the same order
+	* If the segment is complex then it must contain payload bits
+	* If it is not complex then it could be part of the cover image
+	* It could also be a non\-complex part of the payload
+* Thus non\-complex payload segments must be made complex for the extraction algorithm to work
+
+#### Conjugation
+
+* If a payload segment is not complex then all its bits are xored with a chess board pattern:  
+10101010  
+01010101  
+10101010  
+01010101  
+10101010  
+01010101  
+10101010  
+01010101  
+* This is called a conjugated segment
+* It can be shown that: Complexity \(segment\) + Complexity \(conjugated segment\) = 112
+* Thus if T < 0.5, then conjugating a non\-complex segment will always produce a complex segment
+
+#### Conjugation Map / End of Payload
+
+* We still need to detect if a payload segment was conjugated or not
+	* 1 bit per segment
+* Assume the image is 1024 x x1024 then it contains 393,216 segments
+* Assume 128k \(to keep the maths simple\) of the segments are complex and contain payload segments
+* Then the conjugation map contains 128k bits, one per segment
+	* This can be stored in 2k extra segments
+
+#### Conjugation Map / End of Payload
+
+* We also need to know when we have reached the end of the payload
+* We can pre\-process the payload, calculating its length and conjugating non\-complex segments as necessary, producing the conjugation map
+* The conjugation map and payload length can be added to the start of the payload
+* In our example, this will add 2k segments to the front of the payload
+	* They will also need to be conjugated, producing a super\-conjugation map
+* In our example, the super\-conjugation map will be 32 segments long
+	* The recursion will eventually stop
+
+#### Conjugation Bit
+
+* Alternatively, the length can be added to the front of the payload
+* The payload is divided in 63 bit segments
+	* Every segments only contains 63 bits of data
+	* The other bit, say bit 0, is either 1 or 0, depending in whether the segment was conjugated or not
+* This is easier to implement but also easier to detect with a digital examination of the file
+	* One bit position in each segments has an odd distribution of values
+
+_The BPCS algorithm can achieve a capacity of between 25% and 50% without visual detection._
+
+#### Image Types
+
+* Most images are compressed before being communicated
+* A lossless compression preserves the pixel values
+	* The exact values can be recovered by decompressing
+	* Common lossless algorithms are .png and .gif
+* A lossy compression looses information
+	* The exact pixel values cannot be recovered
+	* Common lossy algorithms are .jpg
+* Steganography with lossy algorithm is harder, but can be done
+
+#### Encrypted Payload
+
+* The payload could be encrypted first for added security
+* The techniques described here work with any bit string, whether encrypted or not
+* The encryption and steganography could be done with two separate products
+* Alternatively, keyed steganographic products take a key as a parameter and do both the encryption and steganography
+
+#### Steganalysis
+
+* Attacks on steganography can have several goals:
+	* Recover the payload
+	* Replace the payload
+	* Destroy the payload
+* A visual attack looks at images to see if they show signs of containing a hidden payload
+	* Steganography techniques are specifically designed to make this attack difficult
+* If you have the original image then digital pixel comparisons can be made
+
+#### Histograms
+
+* A histogram counts the number of pixels with a given value and displays them as a graph
+* Histograms of natural images tend to be smooth
+* Histograms of BPCS stego images tend to have a valley, with lower counts, around the complexity threshold
+* Histograms of LSB stego images tend to have some spikes around multiples of 8 bits
+
+#### Digital Watermarks
+
+* Digital watermarks are added to images
+	* Sometimes they are visible but are often invisible
+* They are used to show ownership or otherwise identify images
+* They use techniques similar to steganography
+* The main attack is to try and remove the watermark
+
+#### Content Protection
+
+* Digital content is easy to copy
+	* CD, DVD, BlueRay, digital downloads etc.
+	* Sound, video and software
+* One person can pay for the content and distribute it to others who do not pay
+* A company can sell fake media for a much lower price
+	* A CD / DVD costs in the region of 20 – 30 pence to make
+* Techniques based on single and public key encryption have been created to prevent these attacks
+
+#### Content Protection Challenges
+
+* The user should not have to enter the encryption key
+	* Otherwise the product would be unusable
+* So the key must be encrypted and stored in the hardware / software and hidden from the user
+* The actual encryption key will often be stored in the computer memory while the playing application is running
+	* Making it vulnerable to other running programs
+* Audio and video hardware must eventually get the content in unencrypted form to play it
+	* Specialist hardware / software can then capture this information
+	* As can using a microphone / video camera
+
+#### Audio Cassette Tapes
+
+* Audio cassette tapes recorded music on magnetic tapes
+* They were the next step after vinyl records
+* Copying tapes was easy
+	* Most cassette tape players had two decks to make copying easier
+	* It was possible to make mix tapes
+	* \. \. \. Or make a copy for a friend
+	* The protection was a warning notice: don’t make illegal copies
+* Many legal attempts were made to stop the sale of these devices
+	* These failed because some copying was legal
+* Several countries introduced a tax on blank media that went to the music industry
+
+### MP3
+
+* Use of proprietary compression formats that contained copy protection mechanisms
+	* DRM, digital rights management
+* There was strong customer rejection, exacerbated by the Sony Rootkit problem
+	* On first play of the CD on a computer, malware was secretly added to the computer to interfere with all CD copying
+	* It also phoned home with the user’s general listening habits
+	* The operating system was modified to hide these additional files
+	* which also provided cover for any other malware to hide
+	* The Sony Rootkit software apparently used other people’s code, illegally, without a license!
+
+#### DVD
+
+* Uses CSS \(Content Scrambling System\) based on encryption
+* Used 40 bit keys
+	* In 1996, when it was developed, the USA government did not allow export of any encryption device with greater security
+* There were 5 regions, each with different encryption keys, to support differential pricing
+	* Players and DVDs only worked in one region
+* Each hardware manufacturer \(about 400 of them\) had their own set of 5 keys which were hardcoded in their players
+* Each DVD contained all the allowed keys
+	* A rogue manufacturer could have their key revoked
+	* Their key would not be added to future DVDs
+
+#### Breaking CSS
+
+* Makers had little incentive to keep their keys secret
+	* The keys were inside their players
+	* Making them tamper resistant is expensive
+	* An attacker just needed to find one key
+* A PC is an open platform and so driver code can be obtained
+	* Obfuscating the code was not a serious impediment
+	* Once the CSS algorithm was published, anyone could break it
+* CSS did not allow Linux to play DVDs
+	* Depriving Linux users of access to DVDs resulted in a lot of talented computer guys trying hard to break the encryption
+	* Forcing Linux users to switch to Windows does not work!
+* CSS was broken in 1999, 3 years after it became available
+	* An application that allowed DVDs to be played on Linux machines was published
+* Flaws in the implementation meant that the effective key length was 16 bits
+* It could be broken in about 1 minute by a 2000 era PC
+
+#### HDCP
+
+* High bandwidth Digital Content Protection
+* This is an Intel product. Devices that play HD videos must obtain a license and pay an annual fee
+* Devices
+	* Must not be designed to copy
+	* Must not transmit video signals to non\-HDCP devices
+	* Must frustrate attempts to beat encryption
+* Functionality
+	* Authenticate playing devices
+	* Encrypt transmitted data
+	* Revoke compromised keys
+
+#### How HDCP Works
+
+* Each device has its own
+	* Secret information: 40 x 56\-bit keys
+	* Public information: A 40\-bit Key Selection Vector \(KSV\) with 20 1\-bits and 20 0\-bits
+	* The HDCP organisation provided these numbers to the manufacturers
+
+#### HDCP: Bulk Encryption Keys
+
+* During communication, devices exchange their public KSVs
+* Each device uses the other’s KSV to xor together all the 56\-bit keys where there was a 1\-bit in the KSV
+	* 20 out of 40 keys were used
+	* The HDCP organisation used secret information when handing out the device public and secret information to make sure that both transmitter and receiver are the same
+* This 56\-bit key is used to encrypt and decrypt the data using DES
+* If a device is compromised, the corresponding KSV is added to a revocation list, which is signed by the authorities and burned on all new media
+
+#### HDCP: Mutual Authentication
+
+* Once the devices have exchanged KSV’s and generated their keys, the transmitting device creates a 64\-bit unpredictable number \(UN\) and sends it to the receiver
+* The receiver creates a 16\-bit value based on UN and its version of the key
+	* Like a 16\-bit message digest!
+	* It sends it to the transmitter
+* The transmitter creates its own version of the 16\-bit number based on the UN and its version of the key
+* If they match then communication starts
+
+#### HDCP: Adoption and Attacks
+
+* 2000: invented
+* 2001: Crosby et al. Showed how to break HDCP in a paper at ACM\-CCS8
+* 2004: adopted in USA
+* 2005: adopted in EU
+* All devices marketed as HD ready must used HDCP
+* Microsoft Vista and Win 7 use HDCP for graphics cards and monitors
+* 2010/11: Master keys published on the internet
+	* Around 6 years after adoption
+
+#### How HDCP was Broken
+
+* HDCP used a custom algorithm!
+* The reason was to make it easier to implement in hardware
+	* The custom algorithm used less than 10,000 gates
+	* A system using RSA and other standard algorithms would use about 30,000 gates
+* The weakness of the algorithm was adding the 20 keys \(using xor\), with the 20 being chosen by the KSV value
+	* This is like a system of linear equations
+
+#### Back to HDCP 
+
+* The same principle works if we use xor instead on \+/\-
+* There are 40 unknowns to find
+	* The HDCP organisation’s secret information used to make sure the public and secret keys of each device are compatible
+* We can find them if we have the secret information from 40 different devices
+	* Provided they are all linearly independent
+	* In practice, if we have 50 device keys then there is a 99.9% chance that 40 of them are linearly independent
+* Once we have this information we can rip any DVD
+
+#### AACS: Advanced Access Content System
+
+* Adopted in 2006 to protect Blu\-ray and HD DVD systems
+* Each individual player has a set of 128 AES keys, which are combined in a similar way to HDCP
+	* The algorithm can’t be broken by the linear equation trick
+* It has a similar revocation scheme
+* It uses a ‘traitor tracing’ technique
+	* Many video segments have digital watermarks that can only be decoded by one of the keys in a player
+	* Analysis of pirated content will reveal the keys used, which can be revoked
+
+#### AACS: Breaking This System
+
+* In late 2006 / early 2007 a programs were published that could break the encryption and copy the file to a hard drive, so long as a valid key was provided
+	* Less than a year after adoption
+* Processing keys were found by analysing the computer memory while it was playing a Blu\-ray file
+	* This is an inherent weakness of all such systems
+* The keys were widely published on the internet. For a while the consortium played whack\-a\-mole to take down any site mentioning the key using the DMCA \(Digital Millennium Copyright Act\)
+
+#### Encrypting Microsoft Word Documents
+
+* Up until Office 2007 the key length was 40 bits, making it easy to break with a brute force attack and even easier with a dictionary attack
+	* It used a proprietary algorithm, usually a bad idea
+* Office 2007 – 2016 used AES with a 128\-bit key, which is usually secure
+* Office 2016 uses AES with a 256\-bit key, which is even more secure
+* The user can choose shorter and more memorable keys with these products, making them less secure
+
+#### Encrypting USB Sticks
+
+* Modern USB sticks will use good encryption but there have been some failures in the past
+	* Usually because of a proprietary algorithm
+* SySS Hack on SanDisk Cruzer devices in 2009
+	* The software module that processed the key always sent the same magic bitstring to the drive to unlock it!
+	* Bypassing the key checking part of the software and replaying the magic sequence unlocked the device
+* In 2017 a generic device with a fingerprint scanner did something similar, sending an ID of the fingerprint to the device controller
+	* The attack involved physically opening the USB device and connecting two pins to send the ID of the first recorded fingerprint
+
+#### Secret Splitting 
+
+* Let us imagine that we have a secret that we cannot entrust to just one person, but want to split between two people
+* Both people are needed to reconstruct the message
+* We cannot just give half the bits to each person
+	* It would make it easier for one person to make a brute force attack to recover the other person’s half
+* The secret is usually a password
+* This is authentication requiring more than one person
+
+* The following protocol lets the boss Sam split the secret message Mbetween two underlings Alice and Bob
+* Sam obtains a truly random bit string R, the same length as M
+* Sam calculates P = M ⊕ R, gives P to Alice and R to Bob
+* The message can be reconstructed as P ⊕ R = M ⊕ R ⊕ R = M
+* This technique cannot be broken by cryptographic techniques, since R is a one time pad
+
+#### Splitting Between More Than Two People
+
+* This technique is easily generalised to more than two people
+* Let us split the secret between Alice, Bob, Carol and Dave
+* Sam provides three random bit strings, R, S and T
+* The fourth string is P = M ⊕ R ⊕ S ⊕ T
+* The four strings are distributed to the four underlings
+* The original message is recovered by P ⊕ R ⊕ S ⊕ T = M
+
+#### Limitations of this Protocol
+
+* The boss has absolute power and can hand out rubbish if he wants
+* All pieces of the encrypted message are necessary
+* If Alice falls under a bus then the secret is lost
+
+#### Secret Sharing
+
+* It is possible to split a secret up into n pieces so that it can be recovered with only m of the pieces, with m < n
+	* This is called a threshold scheme
+* With a \(3,4\) threshold scheme, the secret can be divided into 4 pieces and given to Alice, Bob, Carol and Dave
+	* Only three of them \(any three\) are needed to recover the secret
+	* If Alice falls under a bus then the secret is recoverable
+	* but if Bob is away at the time then Carol and Dave cannot recover the secret by themselves
+* The individual pieces are called shadows
+
+#### Lagrange Interpolation Scheme 
+
+* This scheme is based on the numerical solution of linear equations
+* Integers are used to avoid the problem of rounding errors that arise when using real numbers
+* Naturally, the integers are calculated mod p, so that division produces an integer answer
+* The shadows are calculated using a polynomial of the appropriate degree
+* If 2 shadows are needed to construct the key then the appropriate polynomial is a line which has two unknown coefficients a and b
+
+* The algorithm when 2 shadows are needed:
+* Chose a prime number p which is larger than the number of shadows \(n\) and the largest secret
+	* Prime pmust be handed out along with the shadows and made public
+* Chose a random number < p for the coefficient a
+	* It is only used to generate the shadows and is discarded after the shadows are calculated
+	* It must be kept secret
+* The coefficient bis the secret message M
+* This produces the polynomial y\(x\) = a \* x + b \(mod p\)
+
+* The shadows are calculated by evaluating the polynomial at n different random values of x
+* Each shadow is the three numbers \(x, y\(x\), p\)
+* Since the linear equation has two unknown coefficients aand b, any two shadows can be used to find them
+	* They generate two linear equations, which can be solved for the two unknowns a and b
+* We want b, which is the secret M
