@@ -1587,3 +1587,338 @@ _The BPCS algorithm can achieve a capacity of between 25% and 50% without visual
 * Since the linear equation has two unknown coefficients aand b, any two shadows can be used to find them
 	* They generate two linear equations, which can be solved for the two unknowns a and b
 * We want b, which is the secret M
+
+## Week 5
+### Slides 
+#### Passwords
+* The standard way of protecting access to a computer is by issuing a user name and password
+* The computer does not need to store the passwords, just the result of a one way function operating on a password
+	* An encrypted password, like a message digest
+* Each time a user logs on, the password is entered and the encrypted version of the entered password compared with the value stored in the database
+* This theoretically means that there is not a problem if the encrypted password file is stolen
+	* The initial versions of UNIX made the password file publicly readable
+
+#### Password Entropy
+
+* There is a problem if the passwords are similar to English text
+* In this case we must consider the entropy of the password space, rather than the theoretical maximum number of passwords
+* There are 95 printable ASCII characters, so the entropy per character is
+	* log<sub>2</sub>\(95\) ≈ 6.5
+	* This is the maximum entropy, assuming each character is equally likely
+* So the theoretical entropy of an 8 character password is 52 \(8\*6.5\)
+	* In theory, there are 2<sup>52</sup> different passwords
+
+* If we assume that the passwords are more like English then there will be fewer different passwords
+* If we use the redundancy in English to calculate the entropy, we must use the experimental rate of the language, which is \~1.5
+	* The entropy of each character is roughly 1.5
+	* Leading to an entropy of 8 \* 1.5 = 12 bits
+	* This is about 4 thousand choices
+* The actual entropy will be more than this when different cases and also digits can be used
+	* It will still be a lot fewer than 52 bits
+
+#### Dictionary Attacks
+
+* A dictionary attack is a form of brute force attack
+* It is an offline attack, and is used on a copy of the password file
+* A dictionary of possible passwords is constructed and the corresponding encrypted passwords calculated
+* They are compared with the password file, and any matches mean that a password has been compromised
+* It costs just as much to test a large number of passwords as a single password
+* If there are 1000 passwords to test, then someone will almost certainly have chosen an insecure password
+	* Typically, about 30% of the passwords can be obtained
+
+#### David Klein’s Dictionary
+
+* One of the early dictionaries
+	* Variations on user’s name, initials and login name: 130 choices
+	* Men’s and women’s names: 16,000
+	* Places, names of famous people, numbers, vulgar phrases, keyboard patterns, etc: 60,000
+	* Various permutations from the previous list: 1,000,000
+	* Capitalisations from the previous list: 4,000,000
+* If we type “common password lists” into a search engine we will get a large number of lists, ranging in size from 10k to 10M
+
+#### Salt
+
+* A salt value \(random string\) is added to a password before encryption and stored in the password file along with the encrypted password
+* This does not make it harder to crack a given password
+	* The salt string is publically available
+* The dictionary attack cannot be run against all the passwords in a password file together, since they all have individual salt values which must be appended to each password
+* In UNIX, the salt string consists of 2 ASCII characters, which adds 13 bits \(2\*6.5\) to the entropy when conducting a bulk dictionary attack
+	* A factor of around 8,000
+
+#### Pass Phrases
+
+* Generating really random passwords will foil a dictionary attack, but the passwords can be hard to remember
+* One way round this is to make the password very long, a pass phrase
+* This is then fed into a function that generates a 64 bit password
+* This password is then used as before
+* This is useful as a front end to Linux, which has 8 byte passwords, which are rather short
+* As a rule of thumb, one letter in the pass phrase will generate 1.5 bits in the password
+	* This is a similar entropy argument to earlier
+
+#### Graphical Passwords
+
+* It is easier to remember complex information in visual form
+* Recognition Based
+	* Recognise it when you see it again
+* Recall Based
+	* Remember and recreate the image at login
+* Locimetric
+	* Remembering with visual clues
+	* Remember points in an image
+
+#### Passface – A Recognition Based System
+
+* On registration
+	* Choose several different faces that you will recognise again
+* On login
+	* Presented with several screens, each with 16 faces
+	* Recognise a face on each screen
+* Can’t choose relatives or friends – social engineering attack
+* People are not very good at recognising faces when chosen from pictures
+* Does not work well in practice
+
+#### Draw a Secret \(DAS\)
+
+* People remember what they have drawn because of the creative effort involved
+* On registration
+	* Draw a simple shape
+* On login
+	* Draw the same shape again
+* Can you really remember an earlier drawing
+	* Usually too simple to be memorable
+
+#### ClickPoints - Locimetric
+
+* Click on points in a picture
+* Must get the order right
+* How close is close enough?
+* In practice people choose from a small set of points, even in a complex picture
+* Does not work well.
+
+#### Recognising Doodles
+
+* Make the drawing more complex and hence more memorable
+* On registration
+	* Draw several doodles
+* On login
+	* Recognise your doodles amongst distractors, similar to passface
+* You are likely to remember your doodles because of the creative effort
+* They are personal but probably not open to a social engineering attack
+* There can be a problem with distractors that are similar
+	* Many people might choose to draw a similar doodle
+
+#### Filtering Distractors for Doodle Passwords
+
+#### Starting Point
+
+* One of us ran a web site for older users 
+* They did not want another text password
+* Asking them to draw a doodle as a password was more memorable because 
+	* The drawing was personal
+	* They also recalled the drawing process
+	* Visual and action\-planning memory invoked
+
+#### Adding a New User
+
+* They draw 4 black and white doodles which are digitised
+* 15 distractors for each doodle are chosen from existing passwords
+
+#### Login
+
+* On login they choose their doodle in a 4x4 grid for each of 4 screens
+* The random positioning is different each time
+
+#### Problems With Simple Doodles
+
+* Many users choose simple doodles, such as stick men or smileys
+* In this case there is a reasonable probability that one of the distractors is a similar simple doodle drawn by someone else
+
+#### Biometrics
+
+* Fingerprints
+	* Can be lifted from anything you touch. Easy for someone else to acquire them
+	* Fingerprint readers can have trouble with dirty / oily fingers
+	* Fingerprints for manual workers can wear away
+	* Fake fingers are quite easy to create
+	* Fingerprint readers find it easier to read ‘fake fingers’ correctly
+	* Owners of fingerprint based systems, eg some cars, can be in danger of loosing a finger!
+
+* Biometric authentication should be monitored to prevent faking
+	* Someone there to detect the use of a fake finger
+* Biometric information is fixed public knowledge
+	* You can’t choose a new biometric if the old one is compromised
+* The most common biometric is a photo
+* Easily checked by a human
+* Automatic facial recognition is not very good, but improving
+
+#### False Positives and Negatives
+
+* False positive – wrongly say that the biometrics match
+	* Let someone break in
+* False negative – wrongly say the biometrics don’t match
+	* Wrongly exclude someone
+* The false positive / false negative ratio can often be adjusted
+* Biometric should not be used for identification because of the false negative problem
+	* Use an alternative form of identification and use biometrics to authenticate it
+* Use multifactor authentication
+	* Token \(what you have\) and biometric \(what you are\)
+
+#### False Positives and Rare Events
+
+* Mass screening is often proposed to detect rare events
+	* Detect a rare form of cancer
+* No technique is perfect, there will be some false positives and false negatives
+* Example, a screening system has a 1% false positive and a 1% false negative rate
+* It is looking for a 1 in a million cancer
+* If your test is positive, what is the probability that you have the cancer?
+	* It is not 99%!
+* The false positive rate may be small, but if the events we are looking for are rare then most positives we find are false
+
+#### Remote Authentication
+
+* A user is sitting at a client computer but wants to log in to another computer \(a server\) connected to the client
+* The client could transmit the password to the server, letting the server authenticate the user
+* This is dangerous, since the network is insecure
+* The client could authenticate the user and then connect the user to the server
+* This could be a danger to the server, since it must trust the remote authentication performed by the client
+* The server could send the password to the client in the clear, letting the client authenticate the user
+
+#### Authentication Over a Network
+
+* There are the 3 approaches, with decreasing levels of trust
+	* Each client macine authenticates users. Each server enforces a security policy based on the user’s ID
+		* The server assumes the client machines are genuine and trusts them to authenticate users
+	* The client systems must authenticate themselves to servers, but the servers trust the clients to authenticate the users
+	* The user must prove identity to each server. Each server provesidentity to the clients
+
+#### Kerberos
+
+* Kerberos is a trusted third\-party authentication product used by LINUX and Microsoft Windows
+* It provides secure network authentication, allowing access to different services on the network
+* Originated with MIT project Athena
+* The mythical Kerberos was a three headed guard dog, and the Kerberos protocol provides three levels of protection
+	* Authentication at the start of a network connection
+	* Authentication of each message
+	* Encryption of each message
+* It uses single key encryption
+
+#### Gradual Explanation
+
+* We will approach Kerberos in several steps
+* Each step will solve a problem found in the previous step
+* This will help to explain each part of Kerberos
+* The Kerberos actors are:
+	* User \(U\)
+	* Client \(C\) machine, interacts with the user
+	* Server \(S\) machine, provides a service
+	* Authenticator \(A\), authenticates users
+	* Ticket Granting Service \(T\) 
+
+#### A Simple Protocol
+
+* We do not want each server to have to authenticate every user
+	* The user would have to keep entering their password
+* We have a dedicated process, an authentication server \(A\) to do this
+	* It knows the passwords of all users
+	* It shares a different secret key with each server \(S\), set up in the initialisation phase
+* In the following protocol, IP is a network address, P is a password and K a key
+	* C \-\> A:  ID<sub>C</sub>, P<sub>C</sub>, ID<sub>S</sub>
+	* A \-\> C:  Ticket = KS\[ID<sub>C</sub>, IP<sub>C</sub>, ID<sub>S</sub>\]   
+	* C \-\> S:  ID<sub>C</sub>, Ticket
+
+* In this scenario Crequests the users password \(P<sub>C</sub>\) and the service required \(ID<sub>S</sub>\) from the user and sends this information to A
+* Achecks that the password is correct and that the user is allowed to use S.  If this is OK then it sends a Ticket
+* The Ticket is encrypted with K<sub>S</sub>, S’s key and can only be opened by S
+* C sends the Ticket and the user’s ID to S
+* Schecks that the correct user is calling from the correct IP address and has a ticket for the correct sever \(itself\)
+* There are two problems with this protocol:
+	* The password is sent in the clear
+	* The user must enter a password every time a service is used
+
+#### Solving These Problems
+
+* The password transmission problem is solved by creating a user key K<sub>U</sub> based on the users password
+	* Both C and A know the user’s password and can generate this key
+	* They can then communicate securely
+* The second problem is solved by creating a new “Login” service, called a Ticket Granting Service \(T\)
+	* The user gets a Ticket for T when he logs in
+	* T will issue Tickets for different S’s when needed
+
+#### Better Protocol
+
+* When the user logs in
+	* C \-\> A:  ID<sub>C</sub>
+	* A \-\> C:  K<sub>U</sub>\[Ticket<sub>T</sub>\]
+* First use for each new service
+	* C \-\> T:  ID<sub>C</sub>, ID<sub>S</sub>, Ticket<sub>T</sub>
+	* T \-\> C:  Ticket<sub>S</sub>
+* Each time a service is used
+	* C \-\> S:  ID<sub>C</sub>, Ticket<sub>S</sub>
+* Ticket<sub>T</sub> = K<sub>T</sub>\[ID<sub>C</sub>, IP<sub>C</sub>, ID<sub>T</sub>, Timestamp<sub>1</sub>\]
+* Ticket<sub>S</sub> = K<sub>S</sub>\[ID<sub>C</sub>, IP<sub>C</sub>, ID<sub>S</sub>, Timestamp<sub>2</sub>\]
+* A timestamp is actually a time interval, with start and stop times
+
+* The first ticket is encrypted with the users key \(K<sub>U</sub>\)
+	* The user is prompted for their password, and only the user and A knows this
+	* The key is generated from the password and unlocks Ticket<sub>T</sub>
+* The client keeps Ticket<sub>T</sub> and uses it whenever a new type of service is requested
+* The client keeps all the other tickets to be used whenever each service is used
+* The timestamps are needed to prevent replay attacks
+
+#### More Problems
+
+* If the lifetime of the timestamp is too short then the user has to continually type in their password to create a new ticket when the old one expires
+* If the lifetime of the timestamp  is too long, the system is vulnerable to a replay attack
+	* A different user session on the same client machine can use a ticket that has not yet expired to access a service
+	* Thus T and S must be able to prove that the person using a Ticket is the person who was issued with the Ticket
+* The servers must also authenticate themselves to the user
+	* An attacker could insert a false server
+
+#### Authenticators
+
+* Problem 2 is solved by A providing a secret piece of information to both C and T inside the ticket
+	* C can then prove to T that it is the same client session as the one given the Ticket
+	* This secret information is a session key K<sub>CT</sub>, for use between C and T
+* When the user logs in
+	* A \-\> C:  K<sub>U</sub>\[K<sub>CT</sub>, ID<sub>T</sub>, Ticket<sub>T</sub>, Timestamp<sub>1</sub>\]
+	* Ticket<sub>T</sub> = K<sub>T</sub>\[K<sub>CT</sub>, ID<sub>C</sub>, IP<sub>C</sub>, ID<sub>T</sub>, Timestamp<sub>2</sub>\]
+	* The client is told the session key and the validity of the Ticket
+* When the user requests a service
+	* C \-\> T:  ID<sub>S</sub>, Ticket<sub>T</sub>, Authenticator<sub>C</sub>
+	* Authenticator<sub>C</sub> = K<sub>CT</sub>\[ID<sub>C</sub>, IP<sub>C</sub>, Timestamp<sub>3</sub>\]
+* The authenticator proves that the request is coming from the same client session that was granted the Ticket, since it is encrypted with the session key
+
+#### Server Authentication
+
+* When the user requests a service
+	* T \-\> C:  K<sub>CT</sub>\[K<sub>CS</sub>, ID<sub>S</sub>, Timestamp<sub>4</sub>, Ticket<sub>S</sub>\]
+	* T sends back a session key between the client and server, together with a server Ticket, which also contains the session key
+
+* C \-\> S:  Ticket<sub>S</sub>, Authenticator<sub>C</sub>
+* The client creates another authenticator and sends it to the server, together with the ticket
+* S \-\> C:  K<sub>CS</sub>\[Timestamp \+ 1\]
+* The server adds 1 to the timestamp and sends it back, encrypted with the session key
+	* Adding one to the timestamp shows that the server was able to open the authenticator and was not replaying a previous ticket
+	* Similar to the use of unpredictable numbers in other protocols
+
+#### Timestamps
+
+* The timestamps rely on time being synchronised over all machines
+* Network time protocols can be insecure, and so this could be a weakness, allowing a replay attack
+* Timestamps have a fixed lifetime, and represent a period of time, not a time instant
+* They can’t be exact because of network delays etc.
+* This makes the system vulnerable to a quick replay attack, while the timestamp is still valid
+* The servers should keep a table of all current tickets to foil this
+	* They no longer need to remember tickets whose timestamps have expired
+
+#### Software Weaknesses
+
+* The client key is based on their password, with all of the usual vulnerabilities in that area
+* The machine running the Kerberos processes must be secure, since the keys are stored in an internal database on that machine
+* The machine administering this database must also be secure
+* An attacker must be prevented from replacing the Kerberos processes with ones of their own devising
+	* This is similar to login emulators
+* The protocol has to be implemented correctly
+	* This is usually checked with a software validation suite
+
+	
