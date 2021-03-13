@@ -1921,4 +1921,853 @@ _The BPCS algorithm can achieve a capacity of between 25% and 50% without visual
 * The protocol has to be implemented correctly
 	* This is usually checked with a software validation suite
 
-	
+### Week 6
+#### Web Security
+
+* The web is basically a client server application running over a network
+	* The security techniques mentioned so far are all applicable
+* The web does however have its own peculiar security issues
+* The web is a highly visible front end to many corporations, government agencies and public bodies
+	* Reputations can be damaged if web servers are subverted
+* Web browsers are easy to use, web servers are relatively easy to configure and web content is easy to develop
+
+#### Problems Specific to the Web
+
+* The underlying software is very complex and may hide potential security flaws
+* There are many new and upgraded systems that may have been installed correctly but are vulnerable to attack
+* Casual and untrained users commonly manage web based servers
+* Web servers can be exploited as launching pads into the entire corporate network
+* A large number of ‘zombie’ machines can be used to make an attack
+
+#### Web Page Security
+
+* We will start by considering two different ways that IP packets can be encrypted
+	* Transport and tunnel mode
+* We then have a quick overview of HTTP
+* Finally we will first look at ways in which web pages can be attacked
+	* Look at the top 10 security vulnerabilities
+
+#### Security at the IP Layer
+
+* It is transparent to the application software in higher levels
+	* All packets are encrypted, regardless of application generating and consuming them
+	* Users do not need to be trained in security matters
+* It can be implemented in a firewall
+	* Internal traffic is not encrypted and so does not incur the performance penalties
+* It can be implemented on an individual basis
+	* Useful for offsite workers
+* Can be used in a subnet for sensitive applications
+
+#### Transport or Tunnel Modes of Operation
+
+* An IP packet has two parts
+	* Payload: the data being carried
+	* Header: origin, destination and other information
+* Transport Mode
+	* Protection is provided for the IP payload but not the IP header
+* Tunnel Mode
+	* Protection is provided for the entire IP packet, including the header
+	* It is the payload of an outer IP packet, using transport mode
+	* It is useful for transport in the outside world from one firewall to another, hiding traffic analysis
+
+#### Services Provided
+
+* Connectionless Integrity because it is at the IP level
+* Authentication using a signed message digest
+	* In transport mode the payload is authenticated
+	* In tunnel mode the origin and destination are authenticated
+* Confidentiality through encapsulated security payload
+	* In transport mode the payload is confidential
+	* In tunnel mode the origin and destination are confidential
+* The connection details are similar to TLS
+
+#### HTTP
+
+* HTTP is the basic protocol for the WWW
+* A client makes a request to a server
+* It is a stateless protocol
+	* Each transmission between a client and server is independent
+	* The server only deals with the immediate request, it does not remember any of the previous ones
+	* The protocol does not identify a session, it just deals with a collection of transmissions
+	* The application must provide session information to tie together related  transmissions
+* There is no built in encryption
+
+#### GET
+
+* A GET command is sent by a client and requests a named resource
+	* GET /images/logo.png HTTP/1.1
+	* Give me the file called /images/logo.png using HTTP version 1.1
+* There is a mechanism for sending information at the same time that is insecure but is often used
+	* GET /images/logo.png?user=ron HTTP/1.1
+	* This sends the value of the parameter user
+* The GET message is sent in the header part of the IP packet
+	* The header also contains the address of the server
+	* It must sent in the clear to be delivered
+
+#### POST
+
+* POST sends information to the server
+	* POST /images/logo.png HTTP/1.1
+* The file and also any parameters are now sent in the body of the IP packet
+* The body can be encrypted using transport mode in IPSEC
+
+#### COOKIES
+
+* Cookies are files sent from the server to the client and stored on the clients machine
+* They are mainly used to maintain a session
+	* The cookie is stored on the client machine in the first transmission of the session
+	* It uniquely identifies the session
+	* This cookie is then sent back in the body of the subsequent GET commands
+* Cookies can also be used to track users
+
+#### OWASP Top Ten Security Risks
+
+* Open Web Application Security Project
+	* An online community providing free resources to help web security
+1. Injection
+2. Broken Authentication 
+3. Sensitive Data Exposure 
+4. XML External entity XXE 
+5. Broken Access Controls
+6. Security Misconfiguration 
+7. Cross Site Scripting XSS 
+8. Insecure Deserialisation 
+9. Using Components with Known Vulnerabilities 
+10. Insufficient Logging and Monitoring
+
+#### Injection
+
+* Users provide commands to application that are expecting data
+* The data is being processed by a script that mixes commands and user supplied data
+* Many scripting languages, such as SQL, can be fooled into treating part of the user supplied information as a command
+* They will be running on the server with the authorisation of the server ‘user’, often administrator
+* They can access and return sensitive information
+
+#### SQL Injection
+
+* Many systems pass SQL queries to a database subsystem
+* The queries are often constructed from user input
+* These queries will contain meta\-characters which can be misused by an attacker
+* In this first example, we are using a database called Usr that stores user names and passwords in columns called UserName and Password
+	* Our login page will get the relevant information from the user and store it in the variables user and pass
+
+* We then construct a query string in Java and use it to access the database  
+```
+String Query = "SELECT * FROM Usr "
++ "WHERE UserName='" + user +"' "
++ "AND Password='" + pass + "'"; 
+```  
+* If the input text was user = ron and pass = abcdefgh then the query submitted to the database would be:  
+```
+SELECT * FROM Usr WHERE UserName='ron' AND 
+Password='abcdefgh'
+```  
+* On the other hand, if the input text was user = ron' and pass was empty, the generated SQL would be:  
+```
+SELECT * FROM Usr WHERE UserName='ron' –-' AND 
+Password=''
+```  
+* The –\- introduces a SQL comment, which invalidates the password check, provided there is a user called ron
+* This attacks only works if we know the user name, which is not usually as secret as the password
+
+* The problem is not the –\- comment in SQL
+* The problem is in the Java program which has allowed the metacharacter 'to be entered as data
+* When SQL parses its query, it used the first ' to switch from command mode to data mode
+* The second 'switches back to command mode, and so on
+* This has allowed us to enter commands as data
+* This is a tricky problem because ' can be a valid part of a name
+
+#### Blind SQL Injection
+
+* The previous example worked because we knew \(or guessed\) the structure of the database and names of the columns
+* If we did not know this we can still get some information by trying different queries
+	* Telling if they worked or not would provide some information
+	* Error messages may tell us something
+
+#### Command Injection
+
+* Linux uses a command language called bash to run commands
+* Scripts \(programs\) can be written to run common sequences
+* These scripts can use variables to make them more general
+* These variables can contain malicious code
+
+```
+finger $useruser='ron; 
+rm –rf *'
+```
+
+#### Never Trust User Supplied Input
+
+* Check user input before including it in a command script
+* This can be difficult because there are so many things to check
+
+#### Broken Authentication
+
+* Poor implementation can compromise passwords, letting users havemore permissions than they should
+* Example, a login page that allows a large number of attempts to guess a password
+
+#### Password Problems: Users
+
+* Good passwords are hard to remember
+	* Weak passwords are vulnerable to a brute force attack
+* Many accounts, all requiring passwords encourages password reuse
+	* Create an app that people would want to use and collect user names and passwords
+	* Try the user names and passwords on sensitive sites such as internet banking
+* Password rotation and complexity requirements result in users forgetting their passwords and having to reset them
+	* This often requires the user to provide weaker information such as their mother’s maiden name
+
+#### Password Problems: Systems
+
+* The system may have weak password storage
+	* Store as plain text
+	* Use unsalted hashes
+	* Use a weak hash algorithm such as MD5/SHA1
+* Solutions
+	* Use 2 factor authentication
+	* Log authentication failures and monitor the logs
+
+#### Sensitive Data Exposure
+
+* Sensitive data should only be accessible to authorised users
+* Some data is not protected and can be seen by unauthorised users
+* It should be encrypted and stored in computers behind a firewall
+
+* Some web sites use security by obscurity, where sensitive pages are not protected by a login process
+* If the attacker can guess the page URL then they can access the page
+
+#### Hidden Fields in Forms
+
+* Another technique that relies on security by obscurity is to putsensitive information in hidden fields of forms
+	* The hidden field does not show up on the web page
+	* But it can be seen if the html for the web page is examined
+* This is often used for session management
+	* If the field is changed then a session associated with a different user can be accessed
+
+```
+<form action=blah.jsp method=“post”>
+<input type=“hidden” name=“sessid” value=“123”/>
+</form>
+```
+
+#### XML External Entity
+
+* XML is a hierarchical data file format
+* Data can come from inside the server via an external entity reference
+* This might expose sensitive data
+	* General information gathering
+* It is also possible to achieve remote code execution
+
+#### Broken Access Control
+
+* Login into a system lets the user run programs on the machine
+* Access controls decide what they are allowed to do
+	* Example, access only that user’s files
+* If the access controls are not implemented properly then the user might be able to do more than they should
+* This can lead to privilege escalation
+
+* Main problems
+	* Incorrect implementation
+	* User provided data is used without sufficient checks
+* Solutions
+	* Disable directory listings
+	* Log access failures and trigger alerts
+
+#### Security Misconfiguration
+
+* Not setting the security up properly
+* Insecure default configurations
+* Error messages containing sensitive information
+* Not patching or upgrading systems
+
+#### Cross Site Scripting XSS
+
+* Data provided by the client is a script \(EG javascript program\) that is run in the victim’s browser
+	* With potentially admin privileges
+* Can hijack user sessions
+
+_If the script can be stored on the server then the script can be run later, potentially with another user’s privileges._
+
+#### Insecure Serialisation
+
+* Some programming languages, eg Java, allow complex data structures to be stored in their binary form \(serialisation\) and then restored to binary form \(deserialised\)
+* This is more efficient but also allows for malicious data objects that exploit the deserialisation mechanism
+* It can also apply to objects with internal structure such as cookies
+* Cookies are often used to obtain serialisation
+* They are stored on the client machine and so can be modified by a malicious client
+
+#### Using Components with Known Vulnerabilities
+
+* Components are parts of an application, such as libraries, frameworks and software modules
+* They are often stores as separate files \(.dll for example\) and loaded when needed by the application
+	* They can thus be replaced without having to replace the application
+* They run with the same privileges as the application
+
+#### Insufficient Logging and Monitoring
+
+* Logs record programs that run and actions taken
+	* They can be enabled or disabled
+	* If they are disabled then malicious activity will not be recorded
+* If logs are kept then they need to be monitored to detect any attacks in a timely manner
+
+## Week 7
+
+#### Network Layers
+
+* Data Link Layer
+	* Medium Access Control \(MAC\) addresses
+	* Cable or WiFi
+* Network Layer
+	* Internet Protocol \(IP\) addresses
+	* Address Resolution Protocol \(ARP\)
+* Transport Layer
+	* Ports
+* Application Layer
+	* Domain Name Server \(DNS\)
+
+#### Data Link Layer: Cable
+
+* Connects individual devices, typically via ethernet: IEEE 802.3
+* Each device has a MAC address for its Network Interface Controller
+	* 48 bit, 6 groups of 2\-hex digits eg 00:24:E8:95:7A:9E
+* First 24 bit organisationally unique identifier \(OUI\)
+	* Dell: 00\-14\-22 \(Dell has more than one\)
+* Second 24 bits Network Interface Controller \(NIC\) specific
+* Special addresses
+	* FF:FF:FF:FF:FF:FF special, broadcast
+	* 01: . . . Special, multicast \(restricted broadcast\)
+
+* Communication via an ethernet frame \(packet\)
+	* Destination MAC address
+	* Source MAC address
+	* Payload
+	* Checksum
+
+#### Data Link Layer: WiFi
+
+* Individual devices connected by WiFi: IEEE 802.11
+* There are additional frame types
+	* Management
+	* Control
+	* Data
+* MAC address of the Access Point \(AP\) is included in the frame header
+
+#### WiFi Security
+
+* Packets are constrained to cables \(and packet sniffers\) in a connection\-based network
+* In a wireless network anyone can listen if, provided that are in range
+	* Important information MUST BE encrypted
+* Wireless Equivalent Privacy \(WEP\) has been broken
+	* Never use
+* WiFi Protected Access \(WPA\): 2003
+	* Different 128\-bit key per packet
+	* Master key
+	* Intermediate produce, better than WEP but still flawed
+
+* WPA2: 2006
+	* Uses AES
+	* Uses pre\-shared keys, which allow brute force cracking. Key Reinstallation AttaCK \(KRACK\)
+* The attack forces the devices involves to reuse the same key for several different messages
+	* If one of the messages is know then the packet key can be recovered
+	* Known plaintext attack
+* It can be fixed by a software update
+
+* WPA3: proposal 2018
+	* Designed to fix the problem shown up by the KRACK attack
+
+#### Network Layer
+
+* IPV4: 32 bit addresses
+	* 4 x 8\-bit decimal values eg 192.168.56.1
+* IPV6: 128 bit addresses
+* Special addresses
+	* 127.0.0.1  local machine
+	* 255.255.255.0  subnet mask \(24 bit subnet\)
+* IP packets
+	* Destination address
+	* Source address
+	* Payload
+	* Checksum
+
+#### Address Resolution Protocol \(ARP\)
+
+* A device has the IP address of the packet destination and wants to find the MAC address of the device that has this IP address
+* Example
+	* CA:FE:CO:FF:EE:00 has received the packet with IP address 192.168.0.1 and wants to know who to send it to
+	* Who has 192.168.0.1 : sent to FF:FF:FF:FF:FF:FF \(everyone\)
+	* Answer: 192.168.0.1 is at FE:ED:DE:AD:BE:EF : sent to CA:FE:CO:FF:EE:00
+
+#### Types of Attack
+
+* Switch Downgrading: ARP or MAC flooding
+* ARP Poisoning
+
+#### Switch Downgrading : MAC Flooding
+
+* A switch will:
+	* Receive a MAC frame
+	* Use the IP and port number to find the destination MAC
+	* Forward the frame
+* The switch maintains an internal table of IP addresses, port numbers and the MAC addresses of the associated devices
+	* It builds the table dynamically by observing the traffic
+	* The table has a finite size
+* What happens when the table is full?
+	* Some destinations will not be in the table
+	* These frames will be broadcast rather than sent to the destination
+
+#### The Attack
+
+* The attacker sends lots of frames with different addresses
+* This will fill up the table, forcing the switch to start broadcasting frames
+* The implications
+	* The traffic can be monitored since it is being broadcast
+	* The increased traffic reduces performance
+
+#### ARP Poisoning
+
+* The aim of this attack is not to fill up the table but to insert incorrect values
+* Remember that a machine that receives an ethernet frame not in the table will ask around to find out who to forward the packet to
+* It can receive different replies, since the IP protocol does not depend on a specific route. It is connectionless
+* The machine will then decide which route to take
+* The attacker will send a large number of responses saying that it can forward the packet, hoping it will be chosen
+* The aim is for all this traffic to be routed via the attacker, who can then forward it onwards
+	* Man in the middle attack
+
+#### Transport Layer
+
+* Sits on top of IP and connects applications
+* Each IP address has 64k ports, addressed by 16\-bit integers
+	* Well known ports have 10\-bit addresses, port numbers < 1024
+	* 1024 to 49151 registered for particular applications
+	* 49152 to 65535 are public ports
+* Each application connects to a specific port
+	* 20 \(data\), 21 \(control\) FTP
+	* 80 HTTP
+
+#### TCP/UDP
+
+* UDP Single packet transmission
+	* Delivery not guaranteed
+* TCP a sequence of packets
+	* Guaranteed delivery
+	* Will be delivered in order
+* Both connect to ports at an IP address
+
+#### Application Layer
+
+* Domain Name Server \(DNS\)
+* Connects text network addresses to IP addresses
+
+#### DNS Poisoning
+
+* /hosts file on the local computer is the first point of contact in the Domain Name Server process
+	* C:\\Windows\\System32\\Drivers\\etc\\hosts
+* If the name is not there then the process searches further afield
+* This can be use as an add blocker by redirecting advert serving and monitoring IP addresses to 127.0.0.1 \(local host\)
+	* Code trying to refer to these addresses will be sent to the hostmachine, which does not have them
+	* They will not be displayed
+* This approach can also be used for censorship
+
+#### Sockets: Transport Layer Security
+
+* Used to be called Secure Sockets Layer
+* A socket connects two applications with a 'pipe'. First used in UNIX.
+* Data can be transmitted in both directions.  Data arrives at thedestination in the same order that it was put into the pipe.
+* Exceptions can jump the queue
+* The pipe typically runs across the internet, connecting an application on one computer with an application on another
+	* Typically a browser connects to a server
+
+#### TLS Summary
+
+* Public key certificates are used if the client has a public key certificate of the certifying authority that signed the server public key certificate
+* Diffie\-Hellman is used to create ephemeral  keys is there are no certificates available
+* Certificate pinning and perspectives are used to try and foil a man in the middle attack
+
+#### Bulk Data Transmission
+
+* It typically uses either AES or 3DES
+* It typically uses cipher block chaining \(CBC\)
+* It can be useful to transmit single bytes as soon as they are available rather than waiting to collect blocks
+* Counter Cipher Mode \(CCM\) and Galois Counter Mode \(GCM\) are common stream ciphers, transmitting bytes when they become available
+
+#### Resumed Sessions
+
+* If a connection is likely to be used for several sessions then the server can send a session ID or a session ticket \(similar to a Kerberos ticket\) during the initial handshake
+* If the client is given a session ID then when they want to resume the session they just present the ID
+	* The server searches through its collection of current session ID's and checks that the client state \(IP address etc\) is the same
+	* If it is the same then it returns the same session ID, otherwise it returns a different one
+* A session ticket contains the client state in an encrypted form
+	* The server then doesn't need to store all the possible client states itself, but recovers them from the ticket when it is presented
+
+#### Forward Secrecy
+
+* A client\-server session has forward secrecy if the communications remain secret even if the handshake parameters become compromised
+* If all the AES session keys are generated from the initial handshake parameters and then reused for subsequent communications, then
+	* All communications in the past \(if they have been recorded\) and future will be compromised
+* The best way to achieve forward secrecy is to use ephemeral D\-H to calculate the session keys
+* A new random key is generated for each session
+
+#### Denial of Service \(DOS\) Attacks
+
+* Exploit system weaknesses
+	* Ping of death using the network enquiry ping command
+	* Teardrop, sends mangled IP packets and exploits a bug in the code that reassembles them
+	* Smurf attack relies on a poorly configured network.  Sends a packet to the broadcast address and the machine amplifies it by sending it to everyone else
+* Computationally intensive calculations
+	* Diffie\-Hellman calculations in SSL or IPSec
+
+#### DDOS
+
+* Distributed denial of service attacks
+	* Vast number of attackers overwhelm victim 
+	* Exhaust system resources, or
+	* Exhaust bandwidth
+* Assemble a botnet of compromised PC’s
+	* They respond to an attack command
+
+#### Direct Attacks
+
+* The most common attack is SYN flooding using a fake From address
+* SYN asks for a connection
+	* The victim responds to the From address with SYN\-ACK and waits with a half open connection
+	* There will never be a reply because the From address is fake
+	* The victim will usually wait and send several SYN\-ACK packets before giving up
+	* The aim is to exhaust the number of half open connections
+* One preventative method is for the two parties to exchange cookies, a relatively fast operation, before starting to open a connection
+
+#### Reflector Attacks
+
+* Internal internet nodes such as routers and servers are innocently used to launch the attack
+* Packets requiring a response are sent to the routers and other internet infrastructure with a forged From address of the victim
+* The routers sends legitimate responses to the victim
+* The victim is overwhelmed with normal packets
+* Routers are usually induced to send SYN\-ACK packets
+* They can be recognised as bogus
+* The aim is to overwhelm the bandwidth
+
+#### Detect and Filter
+
+* Victim detects an attack
+* Requests that the attacking source packets are filtered by the ISP
+	* How can the victim get information to the ISP when the network is overloaded?
+	* Phone call or alternative network
+* There will be false positives and false negatives
+* The normal packet survival rate can become quite low
+* IP traceback is a good idea that doesn’t always work
+	* Stopped at firewalls
+	* Reflector attacks come from a legitimate source
+* IP hopping and proxies can defend against a DDOS attack
+
+#### Firewalls
+
+* Firewalls are used to monitor incoming and outgoing packets, looking for threats
+* They used rules to decide if traffic is allowed to pass
+* They are usually placed on gateway machines to control access to an internal network
+	* Can use tunnel mode outside
+
+#### Defence in Depth
+
+* We provide more than one firewall, as in the example below
+* The Web Server is in a DMZ \(demilitarised zone\)
+	* It has partial protection
+	* Full protection is behind the second firewall
+
+#### Proxy Service
+
+* All connections to the Internet are routed through the firewall
+* Checking for allowed access is centralised
+* Common content is only cached once
+* Logs are all in one place for ease of monitoring
+
+#### Packet Filtering
+
+* The packets are checked against a set of rules to determine if a packet should pass
+* Check on the requested service \(using port number and machine\)
+	* Only some ports are allowed \(eg those related to HTTP\)
+* Check the packet source
+	* Black list – ban these sites
+	* White list – only allow these sites
+* Deep packet inspection
+	* Check the content
+	* Has privacy implications
+
+#### Stateful Inspection
+
+* Just check key parts of the packet and apply a matching algorithm
+	* Port and protocol
+* The administrator can define rules
+* Rules can use past experience from previous connections to the site, as well as previous packets of the current connection
+
+### Examples
+
+* A rule may state that if too many files are being read by a specific IP address then that IP address is blocked
+* All access to certain domain names can be blocked
+	* This can be bypassed by using IP addresses directly
+* It is possible to create rules for certain protocols
+	* IP, TCP, UDP
+	* HTTP, FTP
+	* ICMP \(Internet Control Message Protocol\)
+	* SMTP \(Simple Mail Transport Protocol\)
+	* SNMP \(Simple Network Management Protocol\)
+	* Telnet \(Remote execution\)
+
+* Specific words and phrases
+	* Deep packet inspection will check words with a list of forbiddenwords and block any packet containing any of these words
+* Some ports, eg FTP \(21\) will only be available on one internal machine
+* Disable source routing
+	* The internet is connectionless, but a packet may specify the exact route that it will take
+	* This can be forged to make it appear that the information came from a trusted source
+
+#### Example Rule
+
+```
+src ip: any; dst ip: webserver; dst port: 80; protocol: tcp
+```
+
+* This rules allows:
+	* Packets to come from anywhere
+	* Only go to the webserver 
+	* Only use port 80 \(HTTP\)
+	* Only use the TCP protocol
+
+#### Next Generation Firewalls \(NGFW\)
+
+* These provide additional functionality
+* Integrated intrusion prevention
+* Application awareness and control
+* Are threat focussed
+
+#### Intrusion Detection
+
+* Network traffic, rather than single packets, is examined to see if an attack is underway
+* It can be signature based
+	* Check with a database of known attacks
+	* Recognise them by their ‘signature’
+	* Will not recognise a novel attack
+* Anomaly detection
+	* AI, typically machine learning, looks for non-standard situations and tries to classify them as an attack or just normal variation
+* In both cases, sysadmins are notified if an attack is suspected
+	* AI is not good enough to be fully trusted 
+
+#### Intrusion Prevention
+
+* Will detect an intrusion as before
+* In this case the firewall can take action without waiting for a sysadmin to initiate it
+
+#### Application Awareness and Control
+
+* Threat focussed
+	* Know which assets are most at risk and add this to context information
+	* Deciding on what to do depends on the potential damage
+* Cleanup after an event
+* Retrospective security
+	* Be aware of a recent event and be on the lookout for it to happen again
+
+#### Virtual Private Network \(VPN\)
+
+* It uses tunnel mode IPSEC
+* The user’s computer will run the VPN application, which puts the whole of the IP packet, including the header, as an encrypted payload in an outer packet
+* The outer packet is delivered to the VPN provider’s computer
+	* Gateway to a company network
+	* Computer in another country
+* Results travel in reverse
+* You appear to be using the VPN provider’s computer
+	* You can appear to be in a different country to bypass censorship
+
+#### Heartbleed
+
+* This is an attack based on a poorly designed feature in a commonlibrary to implement TLS and SSL, OpenSSL
+* This library has a ping command for seeing if a server is alive
+* The client sends a 'are you alive' message to a server
+* The server replies by sending a dump of a portion of RAM to prove that it is alive
+* This dump will typically contain passwords and other sensitive information in an easily recognisable form
+* This feature has now been removed, but older implementations will have to be upgraded
+
+#### Security of a Web Based Application
+
+* We will look at the security threats and possible counter-measures of a typical 4 level web based application.  The four levels are:
+	* Client
+	* Web Server
+	* Application Server
+	* Database and other specialist facilities
+* Each level has its own security problems and solutions, as do the three types of communications between the levels
+* We will discuss each area in turn, considering threats and countermeasures
+
+#### Threats : Client
+
+* The client machine is outside our control
+	* We expect the client to use a standard browser, but oponents cangenerate their own hand crafted HTTP requests if they decide to attack us
+* Failure to logout
+	* This would allow access to user related information
+	* While not strictly our problem, we can take measures to limit any damage from this mistake by the user
+* Browser Cache
+	* The browser may well cache pages or cookies in case they are needed again
+	* These cached pages will be in the user's file system, where someone else can access them
+* Downloadable Information
+	* Any code that runs on the client can be seen
+	* This can provide insight into the internal workings of our systems
+	* This has implications for intellectual property rights
+	* ID numbers may also be used to guess at the URLs of internal webpages, the structure of requests, and so on
+
+#### Countermeasures : Client
+
+* Remove Meaning from Client Side Code
+	* C1: Client side code should not contain any comments and should also be obfuscated as much as possible
+	* C2: No business logic should appear in client side code, which should only deal with presentation issues
+* Avoid Caching
+	* C3: Set page expiration to immediate so that the browser will not cache the page.  Unfortunately the back button will no longer take us back to these pages
+	* C4: Don't use permanent cookies.  Transient in memory cookies can be used to record session information, but can still be seen by anyone with access to memory
+* Field Validation
+	* C5: Length validation of all input from the client, to prevent buffer overflow attacks
+	* C6: Content validation of all data from client, to make sure that it is in the correct format.  This would also deal with special characters such as & and <
+	* C7: Use message digests on all round trip information such as ID numbers to detect tampering and replay attacks
+* Avoid In Clear Information
+	* C8: Do not use HTTP GET command, use POST instead
+	* C9: Encrypt HTTP body using TLS
+	* C10: Reference numbers are only valid during the session, and do not contain any meaningful information
+	* C11: Hidden fields can be used to record session information, but they can also have security weaknesses
+		* An attacker can save a page, change a hidden field value and then replay that page
+		* Do not use hidden fields
+
+#### Threats : Web Server
+
+* The web server is under our control, but there are still many attacks that we need to protect against
+* Exploiting Vulnerabilities of Server Software
+	* Servers such as IIS have a number of well known vulnerabilities,and so we need to make sure that all the patches are up to date
+	* New vulnerabilities come to light from time to time, and so we need to keep up to date with the literature and relevant web sites
+* Caching of Sensitive Information
+	* This is less of a problem on the server, but session related information might still be cached
+
+* Denial of Service Attacks
+* Impersonation of Users
+* Replay Attack
+	* The replay may be a login request or a payment request, for example
+* Hosting an Onward Attack
+	* The structure of the internal domain can be discovered, allowing an enemy to attack it
+* Cross Process Contamination
+	* Information destined for one process may be sent to another
+	* This can happen when we use components and web services
+
+#### Countermeasures : Web Server
+
+* C12: No Direct Access to Business Data.  This access is achieved at the process server level
+* C13: Session Timeout, Protect against users who leave while still logged in
+* C14: Null Memory After Use, Memory that has not been nulled is similar to a cache
+* C15: Session Management, Correctly identify which session any client activity belongs to
+
+#### Threats : Process Server
+
+* The process server processes requests from the web server
+	* It can be attacked from a compromised web server or another machine masquerading as a web server
+	* We thus need to defend in depth
+* Illegitimate Request
+	* If the format of a valid request is known and authentication has been bypassed
+* Denial of Service
+	* This would typically be from a single web server machine, and sonot as series as a DDOS attack
+* Illegitimate Components
+	* Some parts of the system might have been replaced, either by a successful attack or by an insider attack
+
+#### Countermeasures : Process Servers
+
+* C16: User Authentication
+	* This is where the user authentication takes place, since it is more secure than the web server
+	* Avoid root users, Each user will have just the permissions they require and no more
+* C17: Authorisation Checks
+	* Make sure that the user is authorised to undertake the requests they are making
+* C18: Password Re\-entry
+	* Ask user to re\-enter password at crucial stages to verify that they are who we think they are
+* C19: Stateless Components
+	* If a component based system, such as CORBA, COM or .NET is used, then make sure that each component does not retain any information that could be used when they are next invoked, typically by a different process
+	* In object oriented terminology: they do not have instance variables
+* C20: Component Certification
+	* All components are signed to certify that they are genuine
+* C21: Web server authentication
+
+#### Threats : Database and Other Services
+
+* The database is where we keep all of our persistent information
+	* A lot of damage can be done if it is compromised
+* Illegitimate Requests
+	* The database will respond to any well formed query from any machine with the appropriate access rights
+* Internal Attack from someone inside our organisation
+	* Database tools such as Query Analyser and Enterprise Manager may be used to compromise data
+	* Other parts of the system may also be vulnerable to an internal attack, but an attack on the database would be especially bad
+
+#### Countermeasures : Database
+
+* C22: Access Controls.  Only certified components can access the database
+* C23: Use of Stored Procedures
+	* Make it difficult to construct ad\-hoc queries, although usually there must be a mechanism to allow some ad\-hoc queries
+* C24: Encrypted Columns
+	* Some columns are encrypted
+	* Only secure components can access them
+	* All access to them would be via stored procedures
+
+#### Threats : Connections Between Computers
+
+* The client machines, web servers, process servers and database servers are all connected, and the connections are all vulnerable
+* Disclosure to Packet Analysers
+	* Packet analysers are placed next to communication cables and record all of the packets passing to and fro, reassembling them into streams
+
+#### Threats : Client \- Web Server Link
+
+* The connection between the client and the web server is outside our control, being part of the WWW.  This causes several potential problems
+* Proxy Server Caches
+	* The connection between a client and a server will pass through several nodes, such as an ISP or a corporate gateway
+	* These nodes may well cache the information on the way
+	* This cached information is potentially available to others
+* Spoof Web Sites \(Phishing\)
+	* The customer must be confident that they are connecting to our web site and not a spoof site
+* Information Sent in The Clear
+	* The HTTP header for all HTTP packets is never encrypted.  This includes the URL
+	* The GET method of parameter passing adds parameters as part of the URL, and, as such, they are communicated in the clear
+	* The POST method of passing parameters uses the HTTP packet body, and so can be encrypted
+
+#### External Safeguards
+
+* C25: Firewalls
+	* A typical hardware architecture will have two firewalls.  The first one filters all non\-HTTP traffic to the web server.  The other makes sure that only the web servers can access the process server
+* C26: Intrusion Detection
+	* There are third party products that can detect any unusual activity and alert an administrator
+	* Tamper detection can be achieved with message digests
+* C27: Physical security of critical components
+
+#### Email Problems
+
+* There are security implications if our system accepts inbound email, and generates outbound email
+* Impersonation
+* Denial of Service
+	* Email bombs may be sent
+* Viruses and Executable Attachments
+	* This threat will cause us problems if our system is affected
+	* Our reputation will suffer if we send out infected emails
+* Spam Relay
+	* Our email server may be taken over as a spam relay and become blacklisted, preventing us from sending legitimate emails
+	* This would also damage our reputation
+* Security of Mail Content
+	* Encryption of email is not widespread and distribution of encrypted email relies on encryption facilities at each end
+	* We cannot assume that our customers will use encrypted email
+
+#### Countermeasures : Email
+
+* C28: Web Based Mail.  Provide our own web based email, which we can ensure is encrypted
+* C29: Check for Viruses, Both on inbound and outbound email
+* C30: Verify that the SMTP header is valid
+* C31: Configure email system securely, making sure it cannot be used as a relay
+
+#### Installation and Configuration Issues
+
+* There are a number of issues involved when we install our system at a customer’s site
+	* Caused by customers or our own technical staff
+* Revealing Secrets
+	* We may need special permissions and IDs when we set up the system
+	* We must make sure that these are not revealed
+* Installation of Illegitimate Components
+	* Components designed to compromise security may be installed alongside or in place of regular components
+* Security can be compromised when a system is reconfigured
+
+#### Countermeasures – Installation and Configuration
+
+* C32: Physical Security
+
+
+
