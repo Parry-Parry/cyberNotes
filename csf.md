@@ -2769,5 +2769,1142 @@ src ip: any; dst ip: webserver; dst port: 80; protocol: tcp
 
 * C32: Physical Security
 
+## Week 8
 
+#### Black and White Hats
 
+* Attacking a system is usually a hostile action, but can also be good
+* If you want to find out how secure you are, you should check your defences
+	* Walk round your house seeing it as a burglar would
+* The difference between black hat \(bad\) and white hat \(good\) depends on permissions
+* A white hat hacker conducts penetration testing with the permission of the organisation being attacked
+	* I’ll pay you to walk round my house
+	* This must be a written legal contract, with details of what is and is not allowed
+	* Precautions must be taken to prevent damage
+
+#### Grey Hats
+
+* Another dimension to hacking is the motive of the hacker
+* A grey hat hacker does not have permission, but does the hacking for the overall good
+* A black hat hacker does the same thing, also without permissions, but for their own or other’s gain
+* The only difference is the motive
+* It is very difficult to prove motive at the time of the offence in a legal setting
+* Courts focus on what can be proved
+	* What actually happened
+	* Was there legal permission to do it
+* Proving you were hacking for the good of society is hard to prove
+
+#### Passive vs. Active Testing
+
+* Passive testing involves looking for vulnerabilities
+	* That door is inside a porch and looks like it could be kicked open
+* Active testing
+	* Going inside the porch and trying to kick the door open
+* The system will have a public interface, which is public knowledge
+	* Anyone is allowed to try it out, but...
+* Some public information can only be obtained by an investigation that is not normal use of the system
+	* Going into the porch to check out the door in detail
+* This can be termed offensive and is a grey area
+	* Better to get permission first
+
+#### Black Box and White Box Penetration Testing
+
+* Black and white box testing
+	* Black box, test the functionality
+	* White box, test the internal
+* Black and white box penetration testing is different
+* White box, everyone knows that a test is taking place
+* Black box, most people involved are unaware that testing is taking place
+	* Of course, the person signing the permissions knows
+* Black box testing is more effective because it tests the whole system, including the people involved
+	* Most security problems are caused by people rather than hardware or software
+
+#### Penetration Testing Steps
+
+1. Reconnaissance
+2. Scanning
+3. Gaining Access
+4. Maintaining Access
+5. Covering Tracks
+
+#### Step 1 \- Reconnaissance
+
+* This involves gathering information about the target
+* Much of this is public information and does not need permissions
+* Some public information needs effort to collect
+	* For example, port scanning
+	* This effort can be thought of as offensive
+	* The information gathering may be logged and the target alerted
+* There are two main ways of getting this information
+	* Social engineering
+	* Electronic means
+
+##### Social Engineering
+
+* Phone calls trying to get information
+	* A charity asking for donations: to determine financial status
+	* The inland revenue with a tax rebate: to get addresses / bank account details
+* Bogus tradespeople
+* Kevin Mitnick: The Art of Deception
+	* He executed the perfect escape plan by adopting a second identity
+	* He was caught because he kept hacking into the police system to keep track of his pursuers
+	* They had set up a honey trap and were tracking him
+	* He should have stayed quiet electronically
+
+##### Electronic Information Available
+
+* Public IP address
+	* Where the server is physically located
+	* What other IPs it communicates with
+* Operating System
+	* Each has its own weaknesses
+	* Malware can be crafted to attack just the OS
+* Mailing lists
+	* For phishing and spear fishing
+
+##### Reconnaissance Tools
+
+* Maltego
+* IPvoid
+* Netcraft
+* Domain Dossier
+* Ping
+* Tracert
+* HTTrack
+
+##### Maltego
+
+* Typing an IP into this site will give a map to different sites linked to that IP of which some will be insecure
+* Allows users to vote on whether the address is malicious
+
+##### ipvoid
+
+* There are 18 different tests that you can run
+* Blacklist check
+	* 188.40.75.132 is blacklisted, while 45.33.32.156 is not
+* Ping tests to see if a site is online
+* Whois
+* MX \(Mail Exchange\) finds out which systems handle mail
+* Traceroute: how many hops needed to reach the destination
+	* 30 hops, all listed, to reach 45.33.32.156
+
+##### netcraft
+
+* This is similar to ipvoid, but also finds operating systems
+* There are 4 main groups of functionality:
+	* Anti\-Phishing
+	* Security Testing
+	* Internet Data Mining
+	* Performance
+* It can run using a command line
+
+##### Domain Dossier
+
+* The Domain Dossier tool generates reports from public records about domain names and IP addresses to help solve problems, investigate cybercrime, or just better understand how things are set up
+* These reports may show you:
+	* Owner’s contact information
+	* Registrar and registry information
+	* The company that is hosting a Web site
+	* Where an IP address is geographically located
+	* What type of server is at the address
+	* The upstream networks of a site
+
+##### HTTrack
+
+* It allows you to download a World Wide Web site from the Internet to a local directory, building recursively all directories, getting HTML, images, and other files from the server to your computer
+* HTTrack arranges the original site's relative link\-structure
+* Simply open a page of the "mirrored" website in your browser, and you can browse the site from link to link, as if you were viewing it online
+* HTTrack can also update an existing mirrored site, and resume interrupted downloads
+* HTTrack is fully configurable, and has an integrated help system.
+* It creates a copy of the site that can be studied offline at your leisure
+* The site in question can easily find out that HTTrack is being used
+* Making an offline copy is considered offensive behaviour
+
+#### Step 2 \- Scanning
+
+* Reconnaissance has found an interesting target
+* Scanning then focuses on that target and finding out more information
+* Network scanning
+	* Identifies live hosts
+* Port scanning
+	* Identifies open ports
+* Vulnerability scanning
+	* Looks up known vulnerabilities from public databases and sees ifany of the identified hosts and ports are vulnerable
+
+##### AngryIP
+
+* It scans IP addresses and ports
+
+##### Advanced Port Scanner
+
+* Similar to AngryIP but also detects the programs running on the ports it finds
+
+##### nmap and Zenmap
+
+* Nmap is a command line program, while Zenmap is a GUI version
+* It looks for active hosts and ports
+* It can also find out the operating system running on the various hosts
+
+##### OpenVAS
+
+* A vulnerability scanner
+* OpenVAS is a full\-featured vulnerability scanner
+* Its capabilities include unauthenticated testing, authenticated testing, various high level and low level Internet and industrial protocols, performance tuning for large\-scale scans and a powerful internal programming language to implement any type of vulnerability test
+* The scanner is accompanied by a vulnerability tests feed with a long history and daily updates
+
+#### Step 3 \- Gaining Access
+
+* Phishing and Social Engineering try to get passwords so that we can gain access using them
+* Scanning might also have discovered a vulnerability that we can exploit
+* One tool to achieve this is Metasploit
+* Armitage is a GUI version of Metasploit
+
+#### Step 4 – Maintaining Access
+
+* There is only so much that can be done at a single visit
+* Therefore, one of the first tasks after breaking in is to make it easier to break in again
+* Malware can be installed to do this
+* Trojan horses are executables that can run on the target machine without being explicitly activated
+	* They can open a back door for easier access
+	* They can gather data and send it home
+	* They can provide root access \(root kit\)
+	* They can provide remote access \(RAT\)
+* Viruses are similar but trojans are code fragments attached to other programs
+* Worms, look for other hosts to infect, multiplying
+* Keyloggers record every key stroke and send it home
+* An attacker can download the password file and conduct an offline attack to crack some passwords
+* We can also try and escalate privileges and gain admin access
+
+#### Step 5 – Cover Your Tracks
+
+* There are two approaches, doing both is best
+	* Manipulate logs
+	* Anonymous connections in the first place
+
+##### Logs
+
+* Running CCleaner afterwards is not enough!
+* Change the bash history setting and other settings so that information is not stored in the first place
+* Edit the logs and remove trace of entry to the system and any action taken
+* Hide any files that were installed
+	* Add modified programs like ls and ps and Windows equivalent so that they don’t list selected files and processes
+	* Change dates on any new files inserted
+
+##### Anonymous Connections
+
+* Use Tor and / or VPN to hide the original entry point
+* Conduct your attack somewhere with open WiFi connections
+	* But not where there is CCTV coverage
+* Some sites are actually honeypots, designed to gather information on an attacker
+
+#### Digital Forensics
+
+* Dead forensics: what happened in the past
+	* Contents of the hard drive, usb sticks and other external memory
+* Live forensics: what is happening at the moment
+	* Contents of RAM
+	* Network traffic
+* What is happening at the moment might be erasing information
+	* Decide whether to shut down the device immediately
+
+#### Uses of Digital Forensics
+
+* In many cases digital forensics is used to decide if a crime has been committed
+	* Produce evidence that will stand up in court
+	* Prove that the investigation has not changed the original information
+* It can also be used to analyse how an attack played out
+	* Learn how to defend next time
+	* Will not necessarily lead to a court appearance
+* Criminals use digital forensics to see how well they have covered their tracks
+
+#### Steps in a Computer Forensics Investigation
+
+1. Seizure
+2. Data Acquisition
+3. Analysis
+	* Physical searching
+	* Using a whitelist
+	* Registry examination
+	* Timeline reconstruction
+4. Reporting
+
+#### Step 1 \- Seizure
+
+* If a system is powered on, decide whether to shut it down or conduct a live investigation
+	* Check for active traffic.  If the router lights are flashing then someone might be erasing files remotely
+	* Otherwise, live forensics will provide more information
+* Get the time from the Bios
+	* Might be different from the actual time
+* Label and register all equipment found
+	* Document all connections between components before disconnecting
+* Remove hard drives and place in anti\-static bags
+* Photograph all activity
+
+#### Step 2 – Data Acquisition
+
+* Copy the hard drive, making sure that the integrity of the contents can be proved
+	* Create a message digest of the entire drive contents
+* Create an exact copy \(raw copy\) of the drive, making sure that writing is blocked
+	* Don’t update file modified times etc.
+* Check that the message digest of the copy is the same
+* Create a copy of the copy to work with
+	* If we mess up this copy, we can go back to our first copy to make another working copy
+* Log the initial hard drive as evidence.  It will not be touched again
+
+##### Acquisition Tools
+
+* FTK: Forensic Tool Kit
+* FTK Imager
+
+#### Step 3 
+
+##### Analysis: Physical Searching
+
+* Searching the copy for evidence
+* Many different programs will help
+	* grep : to search for content
+	* find : has a vast number of parameters: all recent files etc.
+* Don’t forget to recover deleted files
+* Useful information
+	* List of users
+	* Emails
+	* Documents
+	* Pictures
+
+##### Analysis: Registry Examination
+
+* Windows operating systems store configuration information in the registry
+* Entries can be viewed and changed using regedit
+	* Getting rid of bogus startup files
+	* Be careful!
+* regviewer is much safer and provides structured output
+	* Can’t make any changes
+* Linux systems store configuration information in many different places
+	* Many text files in /etc
+	* Many hidden \(.\) files in user’s home directories
+
+##### Analysis: Timeline Reconstruction
+
+* This involves examining logs to determine when various things happened
+* File create and modified times
+* Depends on an accurate clock
+
+##### Analysis Tools
+
+* Autopsy, the GUI version of The Sleuth Kit \(TSK\)
+	* Timeline analysis 
+	* Keyword search
+	* Browsing history, bookmarks and cookies
+	* Recover deleted files
+	* Multimedia metadata
+	* Registry analysis
+	* Email analysis
+	* Whitelisting
+	* File system analysis
+	* Create an evidence locker
+* Foremost
+	* Extracts files and sorts them by type
+* Metacam
+	* Specialist analysis of images
+* Zeitline
+	* Establishes a timeline
+	* An oldish free product
+
+#### Step 4 \- Reporting
+
+* The final report should present the finding in a form suitable for a court
+	* The findings
+	* Description of methodology
+	* List of artifacts
+	* Evidence, not opinions
+	* Chain of custody
+	* Proof of no tampering
+* If it results in a court case then the evidence will be presented to the defence before the court appearance
+	* The defence will conduct their own forensic examination
+
+#### Network Forensics
+
+* Analyse packets as they flow around the network
+* Can see all the packets visible to a computer’s network controller
+	* Not just those addresses to the computer
+* Network taps can capture more
+* Network sniffing is illegal
+* Main tool is Wireshark \(wireshark.org\)
+
+## Week 9
+
+#### Bell\-LaPadula
+
+* Designed for computer handling of information
+* A hierarchical system
+	* Top Secret, Secret, Confidential, Open
+* Someone with a high security clearance can access lower securityinformation, but not vice versa
+* Also known as multi\-level security
+* No Read Up
+	* No process can read information at a higher level
+* No Write Down
+	* No process can write information to a lower level
+	* Fear of malicious code executed by a higher process
+
+#### Mandatory Access Controls
+
+* BLP was designed to enforce mandatory access controls
+	* No personal discretion by the controllers allowed
+* The opposite is discretionary access control
+	* With a person in the loop to exercise discretion
+	* So the person can make decisions based on their own judgement
+* A computer program cannot exercise discretion and so the access controls have to be mandatory
+
+#### Compartments
+
+* Information on the same level that must be kept separate is kept in separate compartments
+	* Access controlled by codewords
+* Someone who knows details about one compartment must not know anything about the others
+* In some cases the existence of a compartment is kept secret
+
+#### Combining Compartments
+
+* A new compartment and codeword must be created for people who use more than one compartment
+* This will lead to a large number of compartments
+	* A derived work based on a report using open sources and another using a top secret report will create another top secret compartment
+	* Some organisations have over a million active compartments
+* This can be expressed as a Lattice model
+	* The Lattice Model does not help when a person has to combine two compartments
+	* It just creates a third compartment
+	* It is also difficult to use standard software to automate the process
+
+#### The Lattice Model
+
+* A lattice is a logical structure where any two members may or may not be in a dominance relation 
+	* A \> B, A < B, or A and B can’t be compared
+* There are no dominance loops
+	* A \> B, B \> C, C \> A is impossible
+* Flow of information is from High to Low
+* There is no flow of information if the two nodes can’t be compared
+
+#### High Watermark Principle
+
+* BLP assumes that the confidentiality level of a series of documents is known when the compartment is created
+	* So the security level can’t be changed
+* In practice, a compartment may start off at the confidential level but then, as more documents are added, it’s level needs to be increased
+	* The high watermark principle means that levels can be increased but not decreased
+* This can have the undesired effect that all compartments end up at the highest level
+* Real systems usually need ‘trusted’ subjects that can override the security model
+	* Root users
+
+#### Multilateral Security
+
+* This focuses on lots of different compartments, all at the same level
+* Information is prevented from flowing horizontally rather than vertically
+	* Census data
+	* Medical data
+	* Law firms with many clients
+* BLP with compartments can solve these problems. But there are other approaches
+
+#### The Chinese Wall 
+
+* This is a centralised control model
+* Used in investment banks, but applicable in a number of other organisations
+* Customers are divided into business sectors
+	* Accountants, oil companies, etc.
+* If an employee has worked for one company in a sector, time mustelapse before they can work for another company in the same sector
+* The employee can choose the first company he works for in a sector
+	* He is then barred from the others via access controls
+* Attacks on the Chinese Wall
+	* Several questions on which specialists are available might recover information on how much work was going on in the sector
+
+#### The BMA Model
+
+* Heathcare privacy is an important issue
+	* If a person receives medical treatment, the doctors must have access to their medical records
+	* Medical information can be exploited
+* Secondary uses of healthcare information is also important
+	* Medical advances can depend on such information
+	* The data can be lost
+	* It is difficult to anonymise the records
+	* A patient may have ethical reasons for not wanting their information used for research
+	* Companies can make money from research.  Should the patients be paid?
+
+#### Medical Records Threat Model
+
+* The most common violation is abuse of authorised access by insiders
+* The most common threat vector is a social engineering attack
+* Someone rings the patient’s doctor claiming to be another doctor needing urgent access to the patient’s records
+	* The countermeasure is to always phone back with the number for that person that you have
+* Heathcare staff are focussed on helping the patient and may be careless about security
+* Computers can be left logged in so that anyone in the ward can get quick access to medical records without authenticating themselves
+* The more records a person is allowed to see, the greater the scope for abuse
+
+#### BMA: Definition of a Medical Record
+
+* A patient’s record is not the collection of all information relating to them
+* It is the maximum set of facts relating to a patient to which the same staff have access to
+	* Each patient will have more than one record
+* Many legal requirements require more than one record per person
+	* Sexually transmitted diseases, birth records, prison medical records
+	* Notifiable infectious diseases
+
+#### BMA: Model Principles
+
+* Access controls: Each clinical record has a list of people who can see it and who can add data to it
+* Record opening: A doctor can open a record with themselves and the patient on the access control list
+	* If the patient has been referred by another doctor, the referring doctor is also on the list
+* Control: One of the doctors is in control of the access control list.  They can only add heathcare professionals to it
+* Consent and notification: The doctor must notify the patient of the names on the record access list, and all changes to the list.  Their consent must be obtained, except in an emergency or if there are statutory exemptions
+
+* Persistence: No one can delete clinical information until the appropriate time period has elapsed
+* Attribution: All access to the clinical records must be marked on the record with the subjects name, date and time.  An audit trail must be kept of all deletions
+* Information flow: Information can flow from record A to record B only if everyone in the access control list of record B is also in the list for record A
+* Aggregation control: Patients must be notified if a person who it is proposed should be added to their access control list already has access to a large number of other records
+* Trusted computing base: The effectiveness of the security of the computersystem must be verified by independent experts
+
+#### Pilot Study
+
+* The BMA model is different from the large medical database proposed by the government
+* A pilot study of the BMA model has been run in an English healthauthority and the results have been useful
+* The BMA model can  be applied in a number of non\-medical situations when individual privacy is important and a multi\-level security is not appropriate
+
+#### Sources of Problems
+
+* Systems are often marketed as secure when they have serious flaws
+	* They are then used in the wrong environment
+* Sources of Problems
+	1. Requirements definitions
+	2. System design
+	3. Hardware implementation
+	4. Software implementation
+	5. System use and operation errors
+	6. Wilful system misuse
+	7. Equipment malfunction
+	8. Evolution, maintenance and decommissioning
+	9. Acts of god
+
+#### Security Requirements
+
+* A trusted system is one that has been shown to meet security requirements by an evaluation
+* Security assurance is confidence that a system meets its security requirements
+* A security requirement is a statement of goals that must be satisfied
+* A security policy is a set of statements which when enforced result in a secure system
+* A security model describes a family of policies
+	* Must consider intended use
+* Example: Requirement is the confidentiality of certain data
+	* Policy 1: access control and security attributes associated with data
+	* Policy 2: encryption when in transit
+
+#### TCSEC Evaluation
+
+* Developed by US government \(1985\)
+	* Security levels D, C1, C2, B1, B2, B3, A1
+* Emphasises confidentiality
+	* Protection of government classified information
+* Does not evaluate integrity completely
+	* Relies on access controls
+* Does not consider availability of information
+
+* D: no protection
+* C1: discretionary protection
+* C2: controlled access protection
+* B: security increases from 1 to 3
+	* Users have access controls and security clearances
+	* Data files have different security levels
+	* Constraints on how code is developed
+	* Analysis of covert channels
+* A1
+	* Formal methods and mathematically proven protection
+
+#### TCSEC Impact
+
+* First to address security evaluation
+* Scope limited because originally written for operating system
+	* Expanded to networks and databases
+* Criteria creep
+	* Additional documents published interpretations and clarification
+	* Newer C2 products had to do more than older ones
+* Evaluations took too long
+	* Governments carried out the evaluations
+	* Products released before evaluations were completed
+	* Sometimes they were obsolete before completion
+
+#### ITSEC
+
+* Meanwhile, the international community worked on their own criteria
+* Information Technology Security Evaluation Criteria launched by Europeans in 1991
+	* Mainly France, Germany, UK, Netherlands
+* Two types of criteria: functional and evaluation
+* Used the same functional criteria as TCSEC
+* Defined its own valuation levels, ie type of evaluation
+	* E1, E2, E3, E4, E5, E6
+
+* The vendors defined the functionality class, for example C2
+	* This is called the security target \(ST\)
+* ITSEC provided 6 levels of trust, the evaluation levels
+	* The was also a default level E0 = no trust
+* Thus a product could be classified as C2\-E3
+	* The functionality is at the C2 level
+	* The type of evaluation was E3
+* Impact of ITSEC
+	* Separation of functionality and assurance levels was a good thing
+	* But the evaluation just verified that a vendor claim had been met, but did not say the claim was sensible
+
+#### The Federal Criteria
+
+* Was heavily influenced by TCSEC when evaluating functionality
+* Used the ITSEC approach for the evaluation
+* Added a third dimension: Evaluation Assurance level \(EAL\)
+	* How well the evaluation was tested
+* Defined a PP \(Protection Profile\) for a many security situations
+	* Independent of a specific product
+	* Defined functional requirements
+	* Defined assurance requirements
+	* Described anticipated threats and expected method of use
+* Developed a public profile registry of PP’s
+	* A set of FIPS \(Federal Information Processing Standards\)
+
+#### Common Criteria 
+
+* Current System \(2005\)
+* Initial participants: NSA, NIST, Canada, UK, France, Germany, Netherlands
+* Many other countries have either joined or are in the process of joining
+* TCSEC and ITSEC were retired around 2000
+* Functional requirements
+	* 11 classes, each with several families
+* Assurance requirements
+	* 10 classes, each with several families
+* Evaluation assurance levels
+	* 7 levels showing what level of evaluation has been done
+
+#### Profiles and Targets
+
+* Protection Profile \(PP\)
+	* An implementation independent set of security requirements for acategory of products that meets specific consumer needs
+	* Has six parts, including functional and assurance needs
+* Security Target \(ST\)
+	* A set of security requirements to be used as the basis for evaluation of an identified product
+	* A more specific form of protection profile
+	* May refer to a PP or more than one
+	* Can be developed in isolation
+	* Eight parts, including functional and assurance requirements
+
+#### Security Functional Requirements
+
+* FAU: security audit, 6 families
+* FCO: communications, 2 families
+* FCS: cryptographic support, 2 families
+* FDP: user data protection, 13 families 
+* FIA: identification and authentication, 6
+* FMT: security management, 6 families
+* FPR: privacy, 4 families
+* FPT: protection of security function, 16
+* FRU: resource utilisation, 3 families
+* FTA: access, 6 families
+* FTP: trusted path, 2 families
+
+#### Assurance Requirements
+
+* Measures taken to ensure compliance with the claimed security functionality
+* APE: protection profile evaluation, 6 families
+* ASE: security target evaluation, 8 families
+* ACM: configuration management, 3 families
+* ADO: delivery and operations, 2 families
+* ADV: development, 7 families
+* AGD: guidance documentation, 2 families
+* ALC: life cycle, 4 families
+* ATE: tests, 4 families
+* AVA: vulnerabilities assessment, 4 families
+* AMA: maintenance assurance, 4 families
+
+#### Evaluation Assurance Levels
+
+* Depth and rigor of an evaluation
+
+* EAL1: functionally tested
+* EAL2: structurally tested
+* EAL3: methodically tested and checked
+* EAL4: methodically designed, tested and reviewed
+* EAL5: semi\-formally designed and tested
+* EAL6: semi\-formally verified, designed and tested
+* EAL7: formally verified, designed and tested
+
+#### Evaluation Process
+
+* Accredited labs do evaluations for a fee
+* Vender selects the evaluating lab
+	* A perverse incentive \(moral hazard\)
+* Labs coordinate with an oversight board
+* Labs presents findings to board, who decide on the EAL rating toaward
+* An interpretation board deals with requests for interpretation and keeps the standards up to date
+* Works better for products than systems
+
+#### Other Approaches
+
+* Hostile Review
+	* Give contract rewarded by number of flaws found
+	* Give several organisations the same task and reward the best
+* Penetrate and Patch
+	* Systems will be shipped with bugs
+	* Maintain a mechanism for reporting bugs
+	* Get your users to test the product for you 
+* Free and Open\-Source
+	* Security systems should not rely on hidden mechanisms
+	* Hope that enthusiasts will do the security review for free
+
+#### Secure Software Development
+
+* Most software development methodologies have an initial stage when requirements are gathered
+* Secure software development also gathers security requirements at the start
+	* Build a threat model
+	* Determine risks and establish appropriate mitigations
+	* Write a security policy
+	* Put in place security mechanisms
+	* Manage continued security after deployment
+
+#### Finding Threats: Threat Tree
+
+* The threat model can either be built
+	* Top down: start with undesirable outcomes
+	* Bottom up: start with possible security failures
+	* Or a combination of both top down and bottom up
+
+#### Threat Model: Top Down Construction
+
+* Start with an undesirable outcome
+* Write down each immediate cause
+* Work backwards to find all the precursors for the immediate causes
+* Keep going until we arrive at fundamental security problems
+* This is a manual for an attacker and so should be confidential
+* The following example starts with the undesirable outcome of a successful card forgery
+* It ends up with a number of potential basic security problems
+
+#### Threat Model: Bottom Up Construction
+
+* This involves starting with the possible security failures and then listing the consequences of each failure, working up to the undesirable consequences
+* Often bottom up and top down are used together
+* The end result is a document that shows
+	* The results of any security problem, the items at the bottom
+	* The assets being protected, the items at the top
+
+#### Misuse Cases
+
+* Threat modelling finds use cases, just like requirements capture
+	* In this case the users are attackers
+	* Hence they are called misuse cases
+* They are also based on scenarios
+* They list external dependencies and security assumptions
+	* What other pieces of software are involved
+* In an Agile process they are misuse stories
+* Defining attack surfaces can help with finding misuse cases
+
+#### Attack Surfaces
+
+* The attack surface of a produce is any part of the system that is available to an attacker
+* We want to minimise the attack surface
+* Reduce the functionality that executes by default
+* Reduce the scope of those who can use various parts of the system
+* Reduce the privilege of the code
+
+#### Questions to Ask to Reduce the Attack Surface
+
+* Is this feature required by most users?
+* Are all micro\-features required by most users?
+* Is the feature accessible remotely?
+* Is the feature accessible to anonymous users?
+* Is the feature executing with the lowest set of privileges?
+* Does your system listen on ports?
+* Does your system accept network connections from the internet?
+* Does your system require a firewall policy?
+
+#### Risk Management
+
+* Risk: we know the probability of something happening
+* Uncertainty: we don’t know the probability accurately
+	* It is easy to project fears and exaggerate the dangers
+* Most people of uncertainty\-averse and try and remove uncertainty as much as possible
+	* Even if the worse outcome is not that severe
+* The project manager should be more analytical when viewing risk
+
+* Risk management covers threat modelling and security targets but also includes the values of the assets at risk
+	* Security costs money and the result should be related to the value at risk
+* One technique is Annual Loss Expectancy \(ALE\)
+	* A table of all the loss types is made. There are 4 columns
+	* Loss type
+	* Average amount per loss
+	* Loss probabilities, number of cases per year
+	* Combined ALE
+* Other variants are similar
+
+#### Mitigating Risk
+
+* There will be tradeoffs between risks and rewards
+	* Mitigation strategies will usually cost money
+	* Don’t spend more preventing a bad occurrence than would be lost if it happened
+* There are several strategies for dealing with risk
+	* Remove the risk by appropriate measures
+	* Reduce the risk
+	* Accept the risk and do nothing
+	* Pass the risk on to another organisation \(insurance\)
+	* Liability dumping. Don’t worry about the risk if you won’t be blamed when things go wrong
+
+#### Create a Security Policy Document
+
+* This is a precise document that details:
+	* The assets being protected
+	* What various user end employee roles can and can’t do
+	* Who is responsible for enforcement
+* It can contain:
+	* A security policy model, a one page summary of the protection properties that systems like these should have
+	* A number of protection profiles, an implementation independent way of achieving security for a given security target
+	* A number of security targets, the detailed protection mechanismsof this implementation
+
+#### Security Mechanisms
+
+* There are a number of ways in which the security policy can be enforced
+* Assurance requirements detail the ways in which security is shown
+* There are also different ways of evaluating these requirements
+* Here are the FIPS standards
+
+#### Assurance Through the Lifecycle
+
+* Lifecycle: Conception
+* Start with an idea
+* Proof of concept shows idea has merit
+* Security feasibility must be demonstrated
+	* What does secure mean for this concept?
+	* Can this concept be secure?
+	* Is the organisation willing to pay for the security?
+* Identify threats
+* How will assurance be shown?
+
+* Lifecycle: Manufacture
+* Development of plans
+	* Marketing and sales, Development, Testing strategies
+* Technical stages
+	* Design, implementation, tools
+* Management
+	* Planning, scheduling, reviewing, documentation guidelines
+
+* Lifecycle: Deployment
+* Production, distribution, shipping
+	* Make sure security protected in these stages
+* Installation and configuration
+	* Training of service personnel
+	* Operating environment
+* Lifecycle: Fielded Product Life
+* Bug fixing, maintenance, customer service
+	* Modifications must meet security requirements
+* Product retirement
+	* Remove sensitive data
+
+#### Managing Security Requirements Evolution After Deployment
+
+* There are four reasons why security requirements change
+	* Bug fixes
+	* Tune the controls based on experience
+	* An evolving environment
+	* The organisation changes
+* Over time the software can’t keep evolving and then a redevelopment is needed
+
+#### Bug Fixes
+
+* Bugs need to be fixed quickly
+* Information can be spread widely
+	* Customers can become alarmed
+	* Attackers can find out the new exploits
+	* Many countries require organisations to report any security and privacy breaches
+* There are four steps involved
+	* Monitoring
+	* Repair
+	* Distribution
+	* Dealing with the press
+
+#### Bug Fixes: Monitoring
+
+* Customers are often the first to discover a problem
+	* Have a mechanism for customers to report problems
+	* Offer rewards to make it worth their while
+* Keep track of bug reporting websites
+* Make sure someone is responsible for monitoring bugs
+
+#### Bug Fixes: Repair
+
+* Many applications are time critical
+* Someone needs to be on\-call to respond to emergencies
+* They need to be supported by a response team
+	* Technical expertise on various types of bugs
+	* A testing mechanism so that bug fixes can be tested quickly before being released
+* The documentation will need to be updates to reflect the changes
+	* This might mean changes to the threat model and security target
+
+#### Bug Fixes: Distribution
+
+* In organisations with a small number of customers, the bug fix can just be rolled out to the customer experiencing the downtime
+* With more customers, a regular update mechanism is appropriate
+	* Patch Tuesday with Microsoft
+	* Make sure you can cope with sudden surges of traffic
+* Make sure your bug fix has been tested thoroughly
+	* As a customer, it is often better to wait a while to let eager customers discover that the patch bricks their machine
+	* A delay leaves the vulnerability open for a while longer
+
+#### Bug Fixes: Dealing with the Press
+
+* The press won’t be far behind the first report of a security breach
+* It is not enough to fix the problem, you must be seen to have fixed the problem
+* Have a set of press releases allready written, dealing with all possible scenarios
+	* You just have to edit the details to make them specific to the actual breach
+	* You avoid appearing shifty or incompetent
+
+#### Tune the Controls based on Experience
+
+* This is very similar to bug fixing, but
+* The driver is not the discovery of an error
+* It is based on new ways in which your product is being used.It is also driven by the evolving threat environment
+* This makes it proactive
+* You review your threat model and security target and make the necessary improvements before you are attacked
+* This might be difficult to sell to management because you are spending money to fix a potential hole that no one has attacked
+	* If you are successful then there is no attack
+
+#### Responding to an Evolving Environment
+
+* An operation system change can introduce new bugs in the underlying platform
+* Systems may start operating in foreign countries with different computer crime laws
+* Theoretical attacks become practical
+	* DDOS
+	* Phishing 
+* This can be difficult when your systems depends on other systems and devices that no one is responsible for
+	* Many systems use card payment systems
+	* No one user has enough incentive to make sure they are safe
+
+#### Organisational Change
+
+* These are often the major causes of security problems
+* Business process reorganisation
+	* Adopt a computer system that forces users to work in a different and often less efficient way
+	* Poorly designed systems and resentful staff is a recipe for disaster
+	* Staff will find less secure workarounds to keep up with their workload
+* Bank branches used to be staffed by people with good wages and along term career
+	* These days wages are very low and staff turnover is high
+	* The insider security threat is much different
+
+#### Practical Management Issues
+
+* Sarbanes\-Oxley
+* Solving the wrong problem
+* Moral hazard / perverse incentives
+* Insider attacks
+* Fault Masking
+
+#### Sarbanes\-Oxley
+
+* This legislation was passed after Enron and requires companies to demonstrate internal controls that mitigate risk
+* Organisations create a risk register that identifies and documents risks
+* Each risk has an owner who is responsible for monitoring the risk and deciding on appropriate countermeasures
+* Internal politics will effect this process
+	* In a blame culture, no one will want to own a risk since they will be blames if things go wrong
+	* In a problem solving culture, dealing with risks can be a route to advancement
+* S\-O is a process whereby managers can be prosecuted successfully
+
+#### Solving the Wrong Problem
+
+* It is human nature that when faced with a difficult problem, people often work very hard to solve a related easier problem
+* This is often driven by the desire to avoid uncertainty
+	* Managers prefer a check\-list box\-ticking exercise
+	* They believe that if their underlings perform a set of well\-defined tasks then security will follow
+* This approach tends to prevent critical thought
+* There is no consideration of the actual security requirements in each particular case
+* There is a whole security certification industry based on the ‘Common Criteria’ check lists
+
+* As an example, smartcards have come under attack from probing and power analysis attacks
+	* How much power is consumed running crypto algorithms
+* This was tackled by restricting available of design information
+	* The real attacks didn’t depend on design information
+
+#### Moral Hazard
+
+* There are many situation where people who make important decisions do not suffer the consequences when things go wrong
+	* High staff turnover
+	* Extensive use of contractors
+* Another variant is when one part of an organisation takes the credit for profits generated by some decisions, while another part takes the loss
+	* The marketing department takes the credit for rising sales
+	* The finance department has to cope with increasing bad debt
+
+#### Moral Hazard: Developer Roles
+
+* One way of organising a development team is to have separate people as programmers and testers
+* The programmers have an incentive to produce as much code as possible
+* Egoless programming can also cause a moral hazard if no one owns the code
+	* There is an incentive to produce bad code quickly
+* In Agile approaches, programmers have to test their own code
+	* If it not very good then they have to deal with the consequences
+
+#### Insider Attacks
+
+* Most security breaches are caused by insider attacks
+	* Malicious
+	* Just careless
+* It is often politically difficult to get management to admit that this might be a problem
+	* And also getting them to monitor staff who report to them
+* It is often necessary to attack this problem obliquely
+	* Ask for and get money to defend against non\-existent evil hackers
+	* Spend most of it on controls that will also catch dishonest or careless staff
+
+#### Fault Masking
+
+* It is possible that faults will be masked by a combination of different security techniques
+* One bank accidently issued all of its customers with the same PIN
+* This was not noticed because the PIN issuing unit was kept separate from the card operating unit
+	* This is to prevent an insider from knowing the PIN as well as all the card details
+* This affects testability
+
+#### Developer Issues
+
+* Software quality
+* Secure design principles
+* Security testing
+* Fuzz testing
+* Secure development with an Agile approach
+
+#### Software Quality
+
+* If the software doesn’t work very well then there will be lots of errors that are unrelated to security
+* Security problems do not usually affect the way the software works
+	* Unless it is a DOS attack
+* They are more likely to be missed while the staff are stretched trying to resolve functionality issues
+* Systems with better software quality are also more secure
+* The most effective way of ensuring software quality is a code review
+
+#### Secure Design Principles
+
+* Reduce complexity in the code
+	* This is a general good coding principle and led to object\-oriented programming
+* Fail safe defaults
+	* If any user action fails then the system stops working
+* Every user access to every secure part of the code should be checked
+	* Even if it has already been checked in an outer layer of code
+* Open design, do not try security through obscurity
+	* Kerchoff’s Law: The system should not depend on secrecy. The enemy should not have any advantage if they get hold of the code
+* Least privilege: operate with the least privilege required to complete the operation
+* Minimise shared resources
+* Make sure the security actions are easy for users to use
+	* Otherwise users will disable the defences
+
+#### Security Testing
+
+* Fuzz testing
+* Penetration testing
+* Run\-time verification
+* Reviewing threat models
+* Revisiting attack surfaces
+* Note that code testing finds bugs
+* It does not find design errors
+	* They are found by user testing
+
+#### Fuzz Testing
+
+* This just means using incorrect input
+* It is often applied to file formats, eg image file formats
+* It can be used with network protocols
+* It can also work with API calls if our software provides an API
+* There are a lot of different incorrect input types
+* A lot of test cases need to be generated
+* Automated tools can help in some circumstances
+* Smart fuzzing: try all possible wrong inputs
+* Dumb fuzzing: randomly change bits of the data
+
+#### Secure Development with Agile Methods
+
+* Agile project startup
+	* Appoint a security coach, the go\-to person for security questions
+	* This role can be moved around, but within limits, the person must understand secure coding
+	* Pair programming can help spread secure coding practice
+* A security spike can be run from time to time to test the threat model
+	* They can also be run to learn about uncertain aspects of security
+	* They can be added to the product backlog on a regular basis
+* Add security constraints to the list of constraints
+* User stories
+	* Tests can be checking to see if banned functionality has been used
+
+#### UK Legislation
+
+* Computer Misuse Act 1990
+* Regulation of Investigatory Powers Act 2000 \(RIPA\)
+* Data Protection Act 1998
+* Copyright, Design and Patents Act 1988
+* Scottish and English law is different
+* One difference is that Scottish law requires corroborating evidence, while English law does not
+	* A single source is not enough in Scotland
+
+#### Computer Misuse Act 1990
+
+* No definition of what a computer is
+1. Unauthorised access to computer material
+	* There must be knowledge that the access is unauthorised. Reckless behaviour is not covered
+	* There must be intent to access a program or data
+2. Unauthorised access with intent to commit or facilitate commission of further offensives
+3. Unauthorised acts with intent to impair the operation of a computer
+	* This includes preventing access: denial of service
+	* Reckless behaviour is covered
+
+#### Computer Misuse Act Amendments
+
+* The Police and Justice Act of 2006 increased maximum sentences
+* The Serious Crime Act of 2015 added some new aspects
+	* There were a number of clarifications, as well as new offences
+* 3ZA: Unauthorised acts causing or creating a risk of serious damage to human welfare, the environment, economy or national security
+	* Attacks on critical infrastructure
+* 3A: Making, supplying or obtaining articles for use in offenses contrary to sections 1, 3, 3ZA
+	* Making or supplying malware
+
+#### RIPA 2000
+
+* Regulation of Investigatory Power
+	* What public bodies were allowed to do
+* Unlawful interception of communications
+	* Public telecommunication system
+	* Private telecommunication system
+* Hacking into a network
+* Amended in 2003, 2005, 2006, 2010
+
+#### RIPA Powers
+
+* Certain public bodies can demand that an ISP provide access to customers communications in secret
+* Certain public bodies can demand that an ISP fit equipment to facilitate surveillance
+* Enabled mass surveillance of communications in transit
+* Certain public bodies can demand that someone hand over encryption keys
+* Prevents the existence of interception warrants and any data collected from being revealed in court
+* Use of RIPA powers needs to be authorised
+	* Around 10,000 surveillance orders granted in 2010
+
+#### Copyright, Design and Patents Act 1988
+
+* To provide protection to digital works
+* Covers devices designed to circumvent copy\-protection of works in electronic form
+* Fraudulent reception of transmissions
+* Copyright last either 70 or 50 years
+
+#### Defence Arguments
+
+* The Trojan defence
+	* The crime was committed by someone else accessing my computer using malware
+	* Was I reckless in not securing my computer?
+* My wireless broadband was used by someone else
+	* Was I reckless in not protecting my WiFi?
+
+#### Data Protection Act 1998
+
+* Covers
+	* Obtaining or disclosing personal data
+	* Procuring the disclosure of personal data
+	* Selling or offering to sell personal data
+* Protects personal data
+	* Right to view the data an organisation holds on them for a reasonable fee
+	* Request that incorrect information be corrected
+	* Data cannot be used in a way that may potentially cause damage or distress
+	* Data cannot be used for direct marketing
+	* The user needs to consent to the collection and use of their data
+* The Freedom of Information Act 2000 modified the act for public bodies
+* Exemptions for national security, crime and taxation and domestic purposes \(the individual and family\)
+
+#### Subject Access Requests
+
+* This allows an individual to find out if an organisation is holding personal data about them
+* This right was modified and made more powerful by the General Data Protection Regulation of 2018
+* The Information Commissioner monitors compliance and enforcement
